@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+/* ─── Palette OIF ─────────────────────────────────────────── */
+:root {
+  /* Couleurs institutionnelles */
+  --oif-blue:        #003DA5;   /* institutionnel, chiffres factuels */
+  --oif-blue-dark:   #042C53;   /* texte sur fond clair */
+  --oif-purple:      #6B2C91;   /* transformation humaine, résultats qualitatifs */
+  --oif-gold:        #D4A017;   /* chiffres-chocs, accents */
+  --oif-cream:       #FAF7F0;   /* fond doux pour sections éditoriales */
+  --oif-neutral:     #F0F4FA;   /* surfaces secondaires */
+
+  /* Base */
+  --background:      #ffffff;
+  --foreground:      var(--oif-blue-dark);
+  --border:          #E2E8F0;
+  --muted:           var(--oif-neutral);
+  --muted-foreground:#64748B;
+
+  /* Radius */
+  --radius: 0.5rem;
+}
+
+@theme inline {
+  --color-background:         var(--background);
+  --color-foreground:         var(--foreground);
+  --color-oif-blue:           var(--oif-blue);
+  --color-oif-blue-dark:      var(--oif-blue-dark);
+  --color-oif-purple:         var(--oif-purple);
+  --color-oif-gold:           var(--oif-gold);
+  --color-oif-cream:          var(--oif-cream);
+  --color-oif-neutral:        var(--oif-neutral);
+  --color-border:             var(--border);
+  --color-muted:              var(--muted);
+  --color-muted-foreground:   var(--muted-foreground);
+}
+
+/* ─── Typographie ─────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-editorial {
+  font-family: 'Source Serif 4', Georgia, serif;
+}
+
+/* ─── Utilitaires OIF ─────────────────────────────────────── */
+.text-oif-blue        { color: var(--oif-blue); }
+.text-oif-blue-dark   { color: var(--oif-blue-dark); }
+.text-oif-purple      { color: var(--oif-purple); }
+.text-oif-gold        { color: var(--oif-gold); }
+.bg-oif-cream         { background-color: var(--oif-cream); }
+.bg-oif-neutral       { background-color: var(--oif-neutral); }
+.bg-oif-blue          { background-color: var(--oif-blue); }
+.bg-oif-blue-dark     { background-color: var(--oif-blue-dark); }
+.bg-oif-purple        { background-color: var(--oif-purple); }
+.border-oif-blue      { border-color: var(--oif-blue); }
