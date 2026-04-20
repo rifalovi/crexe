@@ -35,7 +35,7 @@ export default function ResultatsEraPage() {
               <span className="text-white text-xs font-bold">CH</span>
             </div>
             <div>
-              <p className="text-sm text-gray-500 mb-2">Carlos H. · Responsable SCS</p>
+              <p className="text-sm text-gray-500 mb-2">Carlos H.</p>
               <p className="text-gray-700 leading-relaxed">
                 Cher(e)s collègues, je suis toujours en train de développer cette partie de
                 la plateforme. Dès qu&apos;elle sera achevée, je vous en tiendrai informé(e)s.

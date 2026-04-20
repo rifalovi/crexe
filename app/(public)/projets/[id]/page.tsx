@@ -152,7 +152,7 @@ async function loadFiche(id: string) {
   const projet = rawProjet as ProjetRow | null
   if (!projet) return null
 
-  const [indicRes, temoRes, paysRes, partRes, evtRes, psRes, repexRes, chaineRes, oddRes] = await Promise.all([
+  const [indicRes, temoRes, paysRes, partRes, evtRes, psRes, repexRes, chaineRes, oddRes, navRes] = await Promise.all([
     supabase
       .from('indicateurs')
       .select('id, libelle, valeur_numerique, valeur_pourcentage, unite, categorie, type_preuve, source, hypothese_calcul, mise_en_avant, ordre')
@@ -221,6 +221,12 @@ async function loadFiche(id: string) {
         return { data: null, error: null }
       }
     })(),
+    // Liste ordonnée des projets publiés pour navigation prev/next
+    supabase
+      .from('projets')
+      .select('id, code_officiel, nom, ps_id')
+      .eq('statut', 'publie')
+      .order('code_officiel', { ascending: true }),
   ])
 
   return {
@@ -234,6 +240,7 @@ async function loadFiche(id: string) {
     representations: ((repexRes as { data: unknown[] | null }).data ?? []) as Representation[],
     chaine: ((chaineRes as { data: unknown | null }).data ?? null) as ChaineRow | null,
     oddContributions: ((oddRes as { data: unknown[] | null }).data ?? []) as OddContribution[],
+    navProjets: ((navRes.data ?? []) as { id: string; code_officiel: string | null; nom: string; ps_id: string | null }[]),
   }
 }
 
@@ -281,7 +288,12 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
   const data = await loadFiche(id)
   if (!data) notFound()
 
-  const { projet, indicateurs, temoignages, pays, partenariats, evenements, programme, representations, chaine, oddContributions } = data
+  const { projet, indicateurs, temoignages, pays, partenariats, evenements, programme, representations, chaine, oddContributions, navProjets } = data
+
+  // Navigation précédent / suivant
+  const navIdx   = navProjets.findIndex((p) => p.id === id)
+  const prevProj = navIdx > 0 ? navProjets[navIdx - 1] : null
+  const nextProj = navIdx >= 0 && navIdx < navProjets.length - 1 ? navProjets[navIdx + 1] : null
   const accent =
     programme?.couleur_theme ??
     PS_FALLBACK_COLOR[projet.ps_id ?? 'PS1'] ??
@@ -759,8 +771,8 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
                     Mesure ERA 2025
                   </span>
                 </div>
-                <h2 className="font-editorial text-3xl md:text-4xl font-semibold text-[var(--oif-blue-dark)] mb-3">
-                  Résultats de la mesure ERA
+                <h2 className="font-editorial text-2xl md:text-3xl font-semibold text-[var(--oif-blue-dark)] mb-3">
+                  Quelques chiffres clés
                 </h2>
                 <p className="text-gray-500 max-w-2xl text-sm leading-relaxed">
                   Effets mesurés, estimés ou observés issus de la Mesure des Résultats et Apprentissages (ERA 2025).
@@ -1138,6 +1150,50 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
           </div>
         </section>
       )}
+
+      {/* ─── Navigation flottante Projet précédent / suivant ──────────────── */}
+      {/* Affiché uniquement si au moins un voisin existe dans la liste publiée */}
+      {(prevProj || nextProj) && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-white/90 backdrop-blur-md border border-gray-200 shadow-xl rounded-2xl px-3 py-2">
+          {prevProj ? (
+            <Link
+              href={`/projets/${prevProj.id}`}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors group"
+              title={prevProj.nom}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:-translate-x-0.5 transition-transform">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+              </svg>
+              <span className="hidden md:block max-w-[12rem] truncate">{prevProj.code_officiel}</span>
+            </Link>
+          ) : (
+            <div className="w-10" />
+          )}
+
+          {/* Indicateur position */}
+          <div className="flex items-center gap-1.5 px-3 border-x border-gray-100">
+            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accent }} />
+            <span className="text-xs text-gray-400 font-medium">
+              {navIdx + 1} / {navProjets.length}
+            </span>
+          </div>
+
+          {nextProj ? (
+            <Link
+              href={`/projets/${nextProj.id}`}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors group"
+              title={nextProj.nom}
+            >
+              <span className="hidden md:block max-w-[12rem] truncate">{nextProj.code_officiel}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:translate-x-0.5 transition-transform">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+              </svg>
+            </Link>
+          ) : (
+            <div className="w-10" />
+          )}
+        </div>
+      )}
     </article>
   )
 }
@@ -1180,58 +1236,89 @@ function ChiffreHero({ value, label, sub, accent, highlight = false }: {
   )
 }
 
+// ─── Icône indicative selon la catégorie / libellé ────────────────────────────
+// Permet d'assigner automatiquement une icône parlante à chaque KPI
+function getIndicIcon(libelle: string, categorie: string | null): string {
+  const t = (libelle + ' ' + (categorie ?? '')).toLowerCase()
+  if (t.includes('femme') || t.includes('genre') || t.includes('fille'))          return '♀'
+  if (t.includes('jeune') || t.includes('youth'))                                  return '🎓'
+  if (t.includes('formation') || t.includes('formé') || t.includes('formés'))     return '📚'
+  if (t.includes('emploi') || t.includes('revenu') || t.includes('économi'))      return '💼'
+  if (t.includes('pays') || t.includes('état') || t.includes('nation'))           return '🌍'
+  if (t.includes('partenair') || t.includes('institution'))                        return '🤝'
+  if (t.includes('numérique') || t.includes('digital') || t.includes('technolog')) return '💻'
+  if (t.includes('environ') || t.includes('climat') || t.includes('écologi'))     return '🌿'
+  if (t.includes('tourisme'))                                                       return '🏔'
+  if (t.includes('culture') || t.includes('patrimoin'))                            return '🎭'
+  if (t.includes('santé') || t.includes('médical'))                               return '🏥'
+  if (t.includes('eau') || t.includes('hydrau'))                                  return '💧'
+  if (t.includes('bénéficiaire') || t.includes('bénéficié'))                      return '👥'
+  if (t.includes('budget') || t.includes('financement') || t.includes('euro'))    return '💰'
+  if (t.includes('taux') || t.includes('pourcentage'))                             return '📊'
+  if (t.includes('satisfaction') || t.includes('qualité'))                         return '⭐'
+  if (t.includes('innov'))                                                          return '💡'
+  return '📈'
+}
+
 function IndicateurCard({ ind, accent }: { ind: Indicateur; accent: string }) {
   // Si on a un pourcentage, on affiche une barre de progression
   const hasPercent = ind.valeur_pourcentage != null
   const pct        = Math.min(100, Math.max(0, ind.valeur_pourcentage ?? 0))
+  const icon       = getIndicIcon(ind.libelle, ind.categorie)
 
   return (
-    <div className="rounded-2xl overflow-hidden border flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 group bg-white"
-      style={{ borderColor: accent + '28' }}>
+    <div className="rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 group"
+      style={{ border: `1.5px solid ${accent}30`, backgroundColor: accent + '0A' }}>
 
-      {/* Zone valeur — fond coloré avec gradient */}
-      <div className="px-6 pt-6 pb-5 relative overflow-hidden"
-        style={{ background: `linear-gradient(135deg,${accent}14,${accent}06)` }}>
-        {/* Décoration cercle fond */}
-        <div className="absolute -right-8 -top-8 w-28 h-28 rounded-full opacity-10"
-          style={{ backgroundColor: accent }} aria-hidden />
+      {/* Bandeau couleur en haut */}
+      <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg,${accent},${accent}88)` }} />
+
+      {/* Zone valeur — fond coloré plein */}
+      <div className="px-5 pt-5 pb-4 relative overflow-hidden"
+        style={{ background: `linear-gradient(135deg,${accent}22,${accent}0C)` }}>
+        {/* Icône décorative grande en fond */}
+        <div className="absolute -right-3 -top-2 text-6xl opacity-10 select-none" aria-hidden>
+          {icon}
+        </div>
 
         <div className="relative z-10">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            {/* Valeur principale avec compteur animé */}
-            <span className="font-editorial leading-none font-bold"
-              style={{ fontSize: 'clamp(2rem,5vw,3.5rem)', color: accent }}>
-              {ind.valeur_pourcentage != null ? (
-                <AnimatedCounter
-                  value={ind.valeur_pourcentage}
-                  suffix={ind.unite ?? ' %'}
-                  decimals={ind.valeur_pourcentage % 1 !== 0 ? 1 : 0}
-                  duration={1800}
-                />
-              ) : ind.valeur_numerique != null ? (
-                <AnimatedCounter
-                  value={ind.valeur_numerique}
-                  suffix={ind.unite ? ` ${ind.unite}` : ''}
-                  decimals={0}
-                  duration={1600}
-                />
-              ) : (
-                formatIndicValeur(ind)
-              )}
-            </span>
-            {/* Badge type de preuve */}
+          {/* Icône + badge preuve */}
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-2xl leading-none" aria-hidden>{icon}</span>
             {ind.type_preuve && <BadgePreuve type={ind.type_preuve} taille="sm" />}
           </div>
 
+          {/* Valeur principale avec compteur animé */}
+          <span className="font-editorial leading-none font-bold block"
+            style={{ fontSize: 'clamp(1.8rem,4vw,2.8rem)', color: accent }}>
+            {ind.valeur_pourcentage != null ? (
+              <AnimatedCounter
+                value={ind.valeur_pourcentage}
+                suffix={ind.unite ?? ' %'}
+                decimals={ind.valeur_pourcentage % 1 !== 0 ? 1 : 0}
+                duration={1800}
+              />
+            ) : ind.valeur_numerique != null ? (
+              <AnimatedCounter
+                value={ind.valeur_numerique}
+                suffix={ind.unite ? ` ${ind.unite}` : ''}
+                decimals={0}
+                duration={1600}
+              />
+            ) : (
+              formatIndicValeur(ind)
+            )}
+          </span>
+
           {/* Barre de progression si pourcentage */}
           {hasPercent && (
-            <div className="mt-2">
-              <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: accent + '20' }}>
+            <div className="mt-3">
+              <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: accent + '25' }}>
                 <div
                   className="h-full rounded-full transition-all duration-1000"
                   style={{
                     width: `${pct}%`,
-                    background: `linear-gradient(90deg,${accent}CC,${accent})`,
+                    background: `linear-gradient(90deg,${accent}AA,${accent})`,
                   }}
                 />
               </div>
@@ -1245,7 +1332,7 @@ function IndicateurCard({ ind, accent }: { ind: Indicateur; accent: string }) {
       </div>
 
       {/* Zone texte */}
-      <div className="px-6 py-4 flex flex-col flex-1">
+      <div className="px-5 py-4 flex flex-col flex-1 bg-white">
         <p className="text-sm font-semibold text-[var(--oif-blue-dark)] leading-snug mb-2">
           {ind.libelle}
         </p>

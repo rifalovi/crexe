@@ -1,0 +1,51 @@
+{
+  "name": "CREXE — Plateforme OIF",
+  "short_name": "CREXE 2025",
+  "description": "Plateforme de valorisation des projets de l'Organisation internationale de la Francophonie — CREXE 2025",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#042C53",
+  "theme_color": "#003DA5",
+  "orientation": "any",
+  "lang": "fr",
+  "categories": ["education", "government", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Tableau de bord CREXE — Vue desktop"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Projets PS3",
+      "short_name": "Projets",
+      "description": "Explorer les projets du Programme stratégique 3",
+      "url": "/projets",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Résultats ERA",
+      "short_name": "ERA",
+      "description": "Résultats de la Mesure des Résultats et Apprentissages",
+      "url": "/resultats-era",
+      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
+    }
+  ]
+}
