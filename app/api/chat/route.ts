@@ -25,9 +25,11 @@ import {
   MESSAGES_REFUS,
 } from '@/lib/llm/prompts'
 
-// OpenAI utilisé pour la génération (clé disponible)
-// Les embeddings utilisent aussi OpenAI — même clé, cohérence totale.
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+// Lazy init — instancié dans le handler, pas au chargement du module.
+// Sinon next build crashe sur Netlify quand OPENAI_API_KEY est absent.
+function getOpenAI() {
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 interface MessageHistorique {
@@ -134,6 +136,7 @@ export async function POST(req: NextRequest) {
 
         try {
           // GPT-4o-mini : rapide, économique, multilingue FR excellent
+          const openai = getOpenAI()
           const gptStream = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
             max_tokens: 1500,

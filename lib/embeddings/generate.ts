@@ -9,7 +9,14 @@
 
 import OpenAI from 'openai'
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+// Concept pédagogique — Lazy initialization :
+// Ne pas instancier le client au niveau du module. Next.js importe les modules
+// pendant le build (collecte des pages) — si la clé API est absente à ce stade,
+// le build échoue. En instanciant à l'intérieur de la fonction, le client
+// n'est créé qu'à l'exécution (première vraie requête), jamais au build.
+function getOpenAI() {
+  return new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+}
 
 // Modèle : 1536 dimensions = compatibilité avec le schema documents_rag (vector(1536))
 const MODEL = 'text-embedding-3-small'
@@ -19,6 +26,7 @@ const MODEL = 'text-embedding-3-small'
  * Retourne un tableau de 1536 nombres flottants.
  */
 export async function generateEmbedding(text: string): Promise<number[]> {
+  const openai = getOpenAI()
   // Nettoyage : supprimer les sauts de ligne multiples (dégradent la qualité)
   const cleaned = text.replace(/\n+/g, ' ').trim()
 
@@ -38,6 +46,7 @@ export async function generateEmbedding(text: string): Promise<number[]> {
  * Limite : 2048 inputs par appel, ~8191 tokens par input.
  */
 export async function generateEmbeddingsBatch(texts: string[]): Promise<number[][]> {
+  const openai = getOpenAI()
   const cleaned = texts.map(t => t.replace(/\n+/g, ' ').trim())
 
   const response = await openai.embeddings.create({
