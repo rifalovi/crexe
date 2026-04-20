@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import Link from 'next/link'
-import { CREX_ANNEE } from '@/components/shared/NavOIF'
+import { CREX_ANNEE } from '@/lib/constants'
 
 export const metadata = {
   title: `Méthodologie — CREXE ${CREX_ANNEE}`,

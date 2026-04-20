@@ -4,7 +4,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { CREX_ANNEE } from '@/components/shared/NavOIF'
+import { CREX_ANNEE } from '@/lib/constants'
 
 export function FooterOIF() {
   return (

@@ -20,24 +20,60 @@ import { SUGGESTIONS_DEMARRAGE } from '@/lib/llm/prompts'
 
 // ─── Rendu Markdown → HTML ────────────────────────────────────────────────────
 // Gère : tableaux, listes, titres ##/###, gras, italique, liens, code inline
+//
+// Concept pédagogique — Pourquoi des styles INLINE ici ?
+// Tailwind CSS génère ses classes au build-time en scannant les fichiers TSX.
+// Or cette fonction génère du HTML sous forme de STRINGS à l'exécution — Tailwind
+// ne peut pas les voir et n'inclut pas ces classes dans le bundle CSS final.
+// Solution : utiliser des attributs style="" directement dans les strings HTML.
 function renderMarkdown(texte: string): string {
-  // 1. Échapper le HTML pour éviter les injections XSS
+  // Couleurs fixes (correspondant aux variables CSS OIF)
+  const C = {
+    blue:    '#003DA5',  // --oif-blue
+    dark:    '#042C53',  // --oif-blue-dark
+    neutral: '#F0F4FA',  // --oif-neutral
+    gray:    '#6b7280',
+    text:    '#1f2937',  // gray-800 — lisible sur fond blanc ou clair
+  }
+
+  // 1. Échapper le HTML (anti-XSS)
   const esc = (s: string) =>
     s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-  // 2. Inline : gras, italique, code, liens (appliqué sur une ligne)
+  // Nettoie une URL : transforme les URLs absolues OIF en chemin relatif
+  // Ex : https://oif.org/fr/crexe/projets/PROJ_A14 → /projets/PROJ_A14
+  const normaliserHref = (href: string): { href: string; externe: boolean } => {
+    // Retirer les préfixes de domaines connus OIF/CREXE
+    const domaines = [
+      /^https?:\/\/(?:www\.)?oif\.org(?:\/fr)?(?:\/crexe)?/i,
+      /^https?:\/\/(?:www\.)?crexe\.oif\.org/i,
+      /^https?:\/\/localhost(?::\d+)?/i,
+    ]
+    for (const re of domaines) {
+      if (re.test(href)) {
+        const chemin = href.replace(re, '') || '/'
+        return { href: chemin.startsWith('/') ? chemin : '/' + chemin, externe: false }
+      }
+    }
+    // Déjà relatif
+    if (href.startsWith('/')) return { href, externe: false }
+    // Lien externe légitime
+    return { href, externe: true }
+  }
+
+  // 2. Formatage inline : gras, italique, code, liens
   const inline = (s: string): string =>
     esc(s)
-      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-      .replace(/`([^`]+)`/g, '<code class="bg-gray-100 text-[var(--oif-blue-dark)] px-1 rounded text-xs font-mono">$1</code>')
-      .replace(
-        /\[([^\]]+)\]\(([^)]+)\)/g,
-        (_, label, href) => {
-          const isInterne = href.startsWith('/')
-          return `<a href="${esc(href)}"${isInterne ? '' : ' target="_blank" rel="noopener"'} class="text-[var(--oif-blue)] underline underline-offset-2 hover:opacity-75 transition">${label}</a>`
-        }
-      )
+      .replace(/\*\*([^*]+)\*\*/g,
+        `<strong style="font-weight:700;color:${C.dark}">$1</strong>`)
+      .replace(/\*([^*]+)\*/g,
+        `<em style="font-style:italic;color:${C.text}">$1</em>`)
+      .replace(/`([^`]+)`/g,
+        `<code style="background:#f3f4f6;color:${C.dark};padding:1px 5px;border-radius:4px;font-size:11px;font-family:monospace">$1</code>`)
+      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, rawHref) => {
+        const { href, externe } = normaliserHref(rawHref)
+        return `<a href="${esc(href)}"${externe ? ' target="_blank" rel="noopener"' : ''} style="color:${C.blue};text-decoration:underline;text-underline-offset:2px">${label}</a>`
+      })
 
   const lignes = texte.split('\n')
   const blocs: string[] = []
@@ -46,88 +82,87 @@ function renderMarkdown(texte: string): string {
   while (i < lignes.length) {
     const ligne = lignes[i]
 
-    // ── Tableau Markdown ────────────────────────────────────────────────────
-    // Détection : ligne qui commence et finit par |
+    // ── Tableau Markdown ─────────────────────────────────────────────────────
     if (/^\s*\|.*\|\s*$/.test(ligne)) {
       const tableLines: string[] = []
       while (i < lignes.length && /^\s*\|.*\|\s*$/.test(lignes[i])) {
         tableLines.push(lignes[i])
         i++
       }
-
-      // Séparer entête (première ligne), ligne de séparation (---), corps
       const [headerLine, separatorLine, ...bodyLines] = tableLines
-      const isSeparator = (l: string) => /^\s*\|[\s\-:|]+\|\s*$/.test(l)
-
-      const parseCells = (l: string) =>
-        l.split('|').slice(1, -1).map(c => c.trim())
-
-      const headers = parseCells(headerLine ?? '')
-      const rows = isSeparator(separatorLine ?? '')
-        ? bodyLines.map(parseCells)
-        : [parseCells(separatorLine ?? ''), ...bodyLines.map(parseCells)]
+      const isSep = (l: string) => /^\s*\|[\s\-:|]+\|\s*$/.test(l)
+      const cells = (l: string) => l.split('|').slice(1, -1).map(c => c.trim())
+      const headers = cells(headerLine ?? '')
+      const rows = isSep(separatorLine ?? '')
+        ? bodyLines.map(cells)
+        : [cells(separatorLine ?? ''), ...bodyLines.map(cells)]
 
       blocs.push(`
-        <div class="overflow-x-auto my-3 rounded-xl border border-gray-200 shadow-sm">
-          <table class="min-w-full text-xs">
-            <thead class="bg-[var(--oif-blue-dark)] text-white">
-              <tr>${headers.map(h => `<th class="px-3 py-2 text-left font-semibold whitespace-nowrap">${inline(h)}</th>`).join('')}</tr>
+        <div style="overflow-x:auto;margin:10px 0;border-radius:10px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+          <table style="width:100%;border-collapse:collapse;font-size:11px">
+            <thead>
+              <tr style="background:${C.dark}">
+                ${headers.map(h => `<th style="padding:7px 10px;text-align:left;font-weight:600;color:#fff;white-space:nowrap">${inline(h)}</th>`).join('')}
+              </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody>
               ${rows.map((row, ri) => `
-                <tr class="${ri % 2 === 0 ? 'bg-white' : 'bg-[var(--oif-neutral)]'}">
-                  ${row.map(cell => `<td class="px-3 py-1.5 text-[var(--oif-blue-dark)]">${inline(cell)}</td>`).join('')}
-                </tr>
-              `).join('')}
+                <tr style="background:${ri % 2 === 0 ? '#fff' : C.neutral}">
+                  ${row.map(cell => `<td style="padding:5px 10px;color:${C.text};border-top:1px solid #f3f4f6">${inline(cell)}</td>`).join('')}
+                </tr>`).join('')}
             </tbody>
           </table>
-        </div>
-      `)
+        </div>`)
       continue
     }
 
-    // ── Titres ###/## ────────────────────────────────────────────────────────
+    // ── Titre ### ────────────────────────────────────────────────────────────
     const h3 = ligne.match(/^###\s+(.+)/)
     if (h3) {
-      blocs.push(`<p class="font-bold text-[var(--oif-blue-dark)] mt-3 mb-1 text-sm">${inline(h3[1])}</p>`)
+      blocs.push(`<p style="font-weight:700;color:${C.dark};margin:10px 0 3px;font-size:13px">${inline(h3[1])}</p>`)
       i++; continue
     }
+    // ── Titre ## ─────────────────────────────────────────────────────────────
     const h2 = ligne.match(/^##\s+(.+)/)
     if (h2) {
-      blocs.push(`<p class="font-bold text-[var(--oif-blue-dark)] mt-4 mb-1">${inline(h2[1])}</p>`)
+      blocs.push(`<p style="font-weight:700;color:${C.dark};margin:14px 0 4px;font-size:14px">${inline(h2[1])}</p>`)
       i++; continue
     }
 
-    // ── Listes à puces ────────────────────────────────────────────────────────
+    // ── Liste à puces ─────────────────────────────────────────────────────────
     if (/^\s*[-*]\s+/.test(ligne)) {
       const items: string[] = []
       while (i < lignes.length && /^\s*[-*]\s+/.test(lignes[i])) {
         items.push(lignes[i].replace(/^\s*[-*]\s+/, ''))
         i++
       }
-      blocs.push(`<ul class="my-1.5 space-y-0.5 pl-4">${items.map(it => `<li class="list-disc list-outside text-[var(--oif-blue-dark)]">${inline(it)}</li>`).join('')}</ul>`)
+      blocs.push(`<ul style="margin:5px 0;padding-left:18px">
+        ${items.map(it => `<li style="color:${C.text};margin:2px 0;list-style-type:disc">${inline(it)}</li>`).join('')}
+      </ul>`)
       continue
     }
 
-    // ── Listes numérotées ─────────────────────────────────────────────────────
+    // ── Liste numérotée ───────────────────────────────────────────────────────
     if (/^\s*\d+\.\s+/.test(ligne)) {
       const items: string[] = []
       while (i < lignes.length && /^\s*\d+\.\s+/.test(lignes[i])) {
         items.push(lignes[i].replace(/^\s*\d+\.\s+/, ''))
         i++
       }
-      blocs.push(`<ol class="my-1.5 space-y-0.5 pl-4">${items.map(it => `<li class="list-decimal list-outside text-[var(--oif-blue-dark)]">${inline(it)}</li>`).join('')}</ol>`)
+      blocs.push(`<ol style="margin:5px 0;padding-left:18px">
+        ${items.map(it => `<li style="color:${C.text};margin:2px 0;list-style-type:decimal">${inline(it)}</li>`).join('')}
+      </ol>`)
       continue
     }
 
     // ── Ligne vide ────────────────────────────────────────────────────────────
     if (ligne.trim() === '') {
-      blocs.push('<div class="h-1.5"></div>')
+      blocs.push('<div style="height:6px"></div>')
       i++; continue
     }
 
-    // ── Paragraphe standard ───────────────────────────────────────────────────
-    blocs.push(`<p class="text-[var(--oif-blue-dark)] leading-relaxed">${inline(ligne)}</p>`)
+    // ── Paragraphe ────────────────────────────────────────────────────────────
+    blocs.push(`<p style="color:${C.text};line-height:1.6;margin:3px 0">${inline(ligne)}</p>`)
     i++
   }
 
