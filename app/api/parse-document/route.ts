@@ -18,9 +18,8 @@ import OpenAI from 'openai'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Forcer le mode dynamique — ce route ne doit jamais être pré-rendu statiquement
+export const dynamic = 'force-dynamic'
 
 // ─── Prompt système pour l'extraction structurée ─────────────────────────────
 // On décrit précisément la structure JSON attendue pour guider GPT-4o.
@@ -88,6 +87,9 @@ STRUCTURE JSON À RETOURNER :
 }`
 
 export async function POST(request: NextRequest) {
+  // Client OpenAI instancié ici pour éviter l'évaluation statique au build
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
   // ─── 1. Vérification de l'authentification ─────────────────────────────────
   const cookieStore = await cookies()
   const supabase = createServerClient(
