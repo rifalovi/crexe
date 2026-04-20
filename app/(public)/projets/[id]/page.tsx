@@ -775,7 +775,7 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
                   Quelques chiffres clés
                 </h2>
                 <p className="text-gray-500 max-w-2xl text-sm leading-relaxed">
-                  Effets mesurés, estimés ou observés issus de la Mesure des Résultats et Apprentissages (ERA 2025).
+                  Effets mesurés, estimés ou observés issus de la Enquête Rapide Annuelle (ERA 2025).
                   Chaque indicateur est sourcé et qualifié selon le niveau de preuve disponible.
                 </p>
               </div>

@@ -7,7 +7,7 @@ import Link from 'next/link'
 
 export const metadata = {
   title: 'Résultats ERA — CREXE 2025',
-  description: "Résultats de la Mesure des Résultats et Apprentissages (ERA) par projet OIF.",
+  description: "Résultats de l'Enquête Rapide Annuelle (ERA) par projet OIF.",
 }
 
 export default function ResultatsEraPage() {
@@ -25,7 +25,7 @@ export default function ResultatsEraPage() {
           Résultats de l&apos;enquête ERA
         </h1>
         <p className="text-gray-500 text-sm mb-8 leading-relaxed">
-          Mesure des Résultats et Apprentissages — Programmation 2024-2027
+          Enquête Rapide Annuelle (ERA) — Programmation 2024-2027
         </p>
 
         {/* Message Carlos */}

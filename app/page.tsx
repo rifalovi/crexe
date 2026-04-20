@@ -10,6 +10,7 @@
 
 import { createServerClient } from '@supabase/ssr'
 import Link from 'next/link'
+import ChatWidget from '@/components/chat/ChatWidget'
 
 // ─── Palette PS (fallback si la DB n'a pas encore couleur_theme) ──────────────
 // Chaque programme stratégique a une couleur signature définie dans les specs v3.
@@ -621,6 +622,8 @@ export default async function HomePage() {
           </div>
         </div>
       </footer>
+      {/* Assistant SCS — chatbot RAG */}
+      <ChatWidget />
     </main>
   )
 }

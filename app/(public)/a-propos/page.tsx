@@ -168,7 +168,7 @@ export default function AProposPage() {
           <p className="text-white/60 text-lg max-w-2xl leading-relaxed">
             Le CREXE {CREX_ANNEE} repose sur une démarche de gestion axée sur les résultats (GAR),
             consolidée par une enquête qualitative auprès des bénéficiaires —
-            la Mesure des Résultats et Apprentissages (ERA).
+            l&apos;Enquête Rapide Annuelle (ERA).
           </p>
           {/* Fil d'Ariane */}
           <div className="flex items-center gap-2 mt-8 text-xs text-white/40">
@@ -351,7 +351,7 @@ export default function AProposPage() {
             </span>
           </div>
           <h2 className="font-editorial text-3xl md:text-4xl font-semibold text-[var(--oif-blue-dark)] mb-5">
-            Mesure des Résultats et Apprentissages (ERA)
+            Enquête Rapide Annuelle (ERA)
           </h2>
 
           <div className="grid md:grid-cols-2 gap-8 mb-10">
