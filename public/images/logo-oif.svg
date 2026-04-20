@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 220" fill="none">
+  <!-- OIF coloured ring -->
+  <!-- Ring: cx=320 cy=80 R=72 r=48 (stroke ~24) -->
+  <!-- Segments (clockwise from top, with gaps) -->
+
+  <!-- Yellow: top ~315°→45° -->
+  <path d="M320,8 A72,72 0 0,1 370.9,41" stroke="#F5C800" stroke-width="24" fill="none" stroke-linecap="butt"/>
+  <!-- Green: ~45°→105° -->
+  <path d="M373.3,46.5 A72,72 0 0,1 370.9,119" stroke="#6BBE45" stroke-width="24" fill="none" stroke-linecap="butt"/>
+  <!-- Purple: ~105°→165° -->
+  <path d="M367.5,124.5 A72,72 0 0,1 326.5,150" stroke="#7B2D8B" stroke-width="24" fill="none" stroke-linecap="butt"/>
+  <!-- Blue: ~195°→285° -->
+  <path d="M290,148 A72,72 0 0,1 249.5,42" stroke="#00A0D1" stroke-width="24" fill="none" stroke-linecap="butt"/>
+  <!-- Red: ~285°→315° -->
+  <path d="M253.1,35 A72,72 0 0,1 315,8" stroke="#E2001A" stroke-width="24" fill="none" stroke-linecap="butt"/>
+
+  <!-- Text: "ORGANISATION INTERNATIONALE DE" -->
+  <text x="18" y="135" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" letter-spacing="2" fill="#777777" text-anchor="start">ORGANISATION</text>
+  <text x="18" y="157" font-family="Arial, Helvetica, sans-serif" font-size="17" font-weight="600" letter-spacing="2" fill="#777777" text-anchor="start">INTERNATIONALE DE</text>
+
+  <!-- Text: "la francophonie" -->
+  <text x="12" y="205" font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="300" fill="#666666" text-anchor="start">la francophonie</text>
+</svg>

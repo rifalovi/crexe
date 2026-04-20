@@ -1356,7 +1356,9 @@ function IndicateurCard({ ind, accent }: { ind: Indicateur; accent: string }) {
 }
 
 function TemoignageCard({ t, accent }: { t: Temoignage; accent: string }) {
-  const isVideo = t.type_media === 'video'
+  const isVideo    = t.type_media === 'video'
+  const isYouTube  = isVideo && t.source_url != null &&
+    (t.source_url.includes('youtube.com') || t.source_url.includes('youtu.be'))
 
   return (
     <figure className="rounded-2xl overflow-hidden border shadow-sm transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 group bg-white flex flex-col"
@@ -1401,13 +1403,27 @@ function TemoignageCard({ t, accent }: { t: Temoignage; accent: string }) {
           </div>
         )}
 
-        {/* Badge vidéo */}
-        {isVideo && (
+        {/* Badge YouTube rouge ou badge vidéo générique */}
+        {isYouTube && t.source_url ? (
+          <a
+            href={t.source_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-3 right-3 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-semibold bg-[#FF0000] text-white shadow-lg hover:bg-[#CC0000] transition"
+            aria-label="Regarder sur YouTube"
+          >
+            {/* Icône YouTube officielle */}
+            <svg width="14" height="10" viewBox="0 0 24 17" fill="white" aria-hidden>
+              <path d="M23.495 2.205a3.005 3.005 0 0 0-2.114-2.13C19.545 0 12 0 12 0S4.455 0 2.62.075A3.005 3.005 0 0 0 .504 2.205C0 4.06 0 8.165 0 8.165s0 4.106.505 5.96a3.005 3.005 0 0 0 2.114 2.13C4.455 16.33 12 16.33 12 16.33s7.545 0 9.381-.075a3.005 3.005 0 0 0 2.114-2.13C24 12.27 24 8.165 24 8.165s0-4.106-.505-5.96zM9.6 11.665V4.665l6.36 3.5-6.36 3.5z"/>
+            </svg>
+            YouTube
+          </a>
+        ) : isVideo ? (
           <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-semibold backdrop-blur-sm"
             style={{ backgroundColor: accent + 'CC', color: 'white' }}>
             ▶ Vidéo
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* ── Citation ── */}
@@ -1423,16 +1439,28 @@ function TemoignageCard({ t, accent }: { t: Temoignage; accent: string }) {
           {t.citation}
         </blockquote>
 
-        {/* Source */}
+        {/* Source / bouton YouTube en bas de carte */}
         {(t.source || t.source_url) && (
-          <figcaption className="flex items-center gap-2 text-xs text-gray-400 pt-4 mt-2 border-t border-gray-100">
-            {t.source_url ? (
+          <figcaption className="flex items-center gap-2 pt-4 mt-2 border-t border-gray-100">
+            {isYouTube && t.source_url ? (
+              <a
+                href={t.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FF0000] text-white text-xs font-semibold hover:bg-[#CC0000] transition shadow-sm"
+              >
+                <svg width="13" height="9" viewBox="0 0 24 17" fill="white" aria-hidden>
+                  <path d="M23.495 2.205a3.005 3.005 0 0 0-2.114-2.13C19.545 0 12 0 12 0S4.455 0 2.62.075A3.005 3.005 0 0 0 .504 2.205C0 4.06 0 8.165 0 8.165s0 4.106.505 5.96a3.005 3.005 0 0 0 2.114 2.13C4.455 16.33 12 16.33 12 16.33s7.545 0 9.381-.075a3.005 3.005 0 0 0 2.114-2.13C24 12.27 24 8.165 24 8.165s0-4.106-.505-5.96zM9.6 11.665V4.665l6.36 3.5-6.36 3.5z"/>
+                </svg>
+                Voir sur YouTube
+              </a>
+            ) : t.source_url ? (
               <a href={t.source_url} target="_blank" rel="noopener noreferrer"
-                className="hover:underline transition-colors" style={{ color: accent }}>
+                className="text-xs hover:underline transition-colors" style={{ color: accent }}>
                 {t.source ?? 'Source'} {isVideo ? '▶' : '↗'}
               </a>
             ) : (
-              <span>{t.source}</span>
+              <span className="text-xs text-gray-400">{t.source}</span>
             )}
           </figcaption>
         )}

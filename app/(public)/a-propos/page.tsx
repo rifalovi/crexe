@@ -4,10 +4,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import Link from 'next/link'
+import { CREX_ANNEE } from '@/components/shared/NavOIF'
 
 export const metadata = {
-  title: 'Méthodologie — CREXE 2025',
-  description: "Découvrez la démarche méthodologique du Compte-Rendu d'Exécution 2025 de l'OIF : cadre stratégique, théorie du changement, enquête ERA et gestion axée sur les résultats.",
+  title: `Méthodologie — CREXE ${CREX_ANNEE}`,
+  description: `Découvrez la démarche méthodologique du Compte-Rendu d'Exécution ${CREX_ANNEE} de l'OIF : cadre stratégique, théorie du changement, enquête ERA et gestion axée sur les résultats.`,
 }
 
 // ─── Données statiques ────────────────────────────────────────────────────────
@@ -147,27 +148,9 @@ const AMBITIONS = [
 // ─── Composant principal ──────────────────────────────────────────────────────
 export default function AProposPage() {
   return (
-    <main className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white">
 
-      {/* ─── Navigation ──────────────────────────────────────────────── */}
-      <nav className="bg-[var(--oif-blue-dark)] border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded bg-[var(--oif-gold)] flex items-center justify-center">
-              <span className="text-white font-black text-xs">OIF</span>
-            </div>
-            <span className="text-white font-semibold text-sm">
-              CREXE <span className="text-white/40 font-normal">2025</span>
-            </span>
-          </div>
-          <div className="hidden md:flex items-center gap-6">
-            <Link href="/projets" className="text-white/60 hover:text-white text-sm transition">Projets</Link>
-            <Link href="/resultats-era" className="text-white/60 hover:text-white text-sm transition">Résultats ERA</Link>
-            <Link href="/a-propos" className="text-white text-sm font-medium border-b border-white/40 pb-0.5">Méthodologie</Link>
-          </div>
-          <Link href="/admin" className="text-xs text-white/40 hover:text-white/80 transition">Espace admin →</Link>
-        </div>
-      </nav>
+      {/* Navigation fournie par le layout (public)/layout.tsx — ne pas dupliquer */}
 
       {/* ─── Hero ────────────────────────────────────────────────────── */}
       <section className="bg-[var(--oif-blue-dark)] text-white" style={{
@@ -183,7 +166,7 @@ export default function AProposPage() {
             <span className="text-[var(--oif-gold)]">& sources</span>
           </h1>
           <p className="text-white/60 text-lg max-w-2xl leading-relaxed">
-            Le CREXE 2025 repose sur une démarche de gestion axée sur les résultats (GAR),
+            Le CREXE {CREX_ANNEE} repose sur une démarche de gestion axée sur les résultats (GAR),
             consolidée par une enquête qualitative auprès des bénéficiaires —
             la Mesure des Résultats et Apprentissages (ERA).
           </p>
@@ -545,7 +528,7 @@ export default function AProposPage() {
               <span className="text-white font-black text-xs">OIF</span>
             </div>
             <div>
-              <p className="text-sm font-semibold">CREXE 2025</p>
+              <p className="text-sm font-semibold">CREXE {CREX_ANNEE}</p>
               <p className="text-xs text-white/40">Organisation internationale de la Francophonie</p>
             </div>
           </div>
@@ -555,10 +538,10 @@ export default function AProposPage() {
             <Link href="/a-propos" className="hover:text-white/70 transition text-white/60">Méthodologie</Link>
           </div>
           <p className="text-xs text-white/30">
-            Données · Licence ouverte OIF 2025
+            Données · Licence ouverte OIF {CREX_ANNEE}
           </p>
         </div>
       </footer>
-    </main>
+    </div>
   )
 }

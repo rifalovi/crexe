@@ -3,23 +3,37 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import Link from 'next/link'
+import Image from 'next/image'
+import { CREX_ANNEE } from '@/components/shared/NavOIF'
 
 export function FooterOIF() {
   return (
     <footer className="bg-[var(--oif-blue-dark)] text-white py-10">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col md:flex-row items-start justify-between gap-8 mb-8">
+          {/* Logo + identité */}
           <div className="max-w-xs">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-7 h-7 rounded bg-[var(--oif-gold)] flex items-center justify-center">
-                <span className="text-white font-black text-xs">OIF</span>
+            <div className="flex items-center gap-3 mb-3">
+              <Image
+                src="/images/logo-oif.svg"
+                alt="Organisation internationale de la Francophonie"
+                width={40}
+                height={22}
+                className="brightness-0 invert opacity-80"
+              />
+              <div className="flex flex-col leading-tight">
+                <span className="font-semibold text-sm">
+                  CREXE <span className="text-[var(--oif-gold)] font-bold">{CREX_ANNEE}</span>
+                </span>
+                <span className="text-white/40 text-[9px] font-normal tracking-wide">
+                  Service de Conception et Suivi des projets (SCS)
+                </span>
               </div>
-              <span className="font-semibold text-sm">CREXE 2025</span>
             </div>
             <p className="text-white/50 text-xs leading-relaxed">
               Plateforme de valorisation des projets de l&apos;Organisation
               internationale de la Francophonie. Données issues du Compte-Rendu
-              d&apos;Exécution 2025.
+              d&apos;Exécution {CREX_ANNEE}.
             </p>
           </div>
 
@@ -41,7 +55,12 @@ export function FooterOIF() {
                 </li>
                 <li>
                   <Link href="/a-propos" className="text-white/60 hover:text-white transition">
-                    À propos
+                    Méthodologie
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/contact" className="text-white/60 hover:text-white transition">
+                    Contact
                   </Link>
                 </li>
               </ul>
@@ -81,15 +100,7 @@ export function FooterOIF() {
             © {new Date().getFullYear()} Organisation internationale de la Francophonie
           </span>
           <span>
-            Données CREXE 2025 · Licence{' '}
-            <a
-              href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
-              className="underline hover:text-white/60 transition"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              CC BY-NC-SA 4.0
-            </a>
+            Données CREXE {CREX_ANNEE} · Service conception et suivi de projet (SCS)
           </span>
         </div>
       </div>

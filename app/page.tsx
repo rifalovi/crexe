@@ -312,10 +312,10 @@ export default async function HomePage() {
               Explorer les projets →
             </Link>
             <Link
-              href="/explorer"
+              href="/resultats-era"
               className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white text-sm px-5 py-2.5 rounded-lg hover:bg-white/15 transition"
             >
-              Carte interactive
+              Résultats ERA
             </Link>
           </div>
         </div>
@@ -521,7 +521,7 @@ export default async function HomePage() {
               </p>
             </div>
             <Link
-              href="/a-propos/methodologie"
+              href="/a-propos"
               className="flex-shrink-0 inline-flex items-center gap-2 text-sm text-[var(--oif-blue)] hover:underline font-medium"
             >
               Voir la méthodologie →
