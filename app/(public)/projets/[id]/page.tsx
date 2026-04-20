@@ -23,6 +23,7 @@ import { BadgePreuve } from '@/components/shared/BadgePreuve'
 import { CercleImpact, type CerclesImpactData } from '@/components/visuals/CercleImpact'
 import { AnimatedCounter } from '@/components/shared/AnimatedCounter'
 import { ChaineResultats, type ChaineResultatsData, type ActiviteStructurante } from '@/components/shared/ChaineResultats'
+import ContributionODD, { type OddContribution } from '@/components/shared/ContributionODD'
 import type { TypePreuve } from '@/types/database'
 
 // ─── Types locaux ─────────────────────────────────────────────────────────────
@@ -151,7 +152,7 @@ async function loadFiche(id: string) {
   const projet = rawProjet as ProjetRow | null
   if (!projet) return null
 
-  const [indicRes, temoRes, paysRes, partRes, evtRes, psRes, repexRes, chaineRes] = await Promise.all([
+  const [indicRes, temoRes, paysRes, partRes, evtRes, psRes, repexRes, chaineRes, oddRes] = await Promise.all([
     supabase
       .from('indicateurs')
       .select('id, libelle, valeur_numerique, valeur_pourcentage, unite, categorie, type_preuve, source, hypothese_calcul, mise_en_avant, ordre')
@@ -207,6 +208,19 @@ async function loadFiche(id: string) {
         return { data: null, error: null }
       }
     })(),
+    // Contributions ODD — graceful fallback si table pas encore migrée
+    (async () => {
+      try {
+        return await supabase
+          .from('odd_contributions')
+          .select('id, odd_numero, cible_codes, texte_contribution, niveau_contribution, ordre, odd_objectif:odd_objectifs(libelle, couleur_hex)')
+          .eq('projet_id', id)
+          .eq('edition_annee', 2025)
+          .order('ordre', { ascending: true })
+      } catch {
+        return { data: null, error: null }
+      }
+    })(),
   ])
 
   return {
@@ -219,6 +233,7 @@ async function loadFiche(id: string) {
     programme: (psRes.data ?? null) as Programme | null,
     representations: ((repexRes as { data: unknown[] | null }).data ?? []) as Representation[],
     chaine: ((chaineRes as { data: unknown | null }).data ?? null) as ChaineRow | null,
+    oddContributions: ((oddRes as { data: unknown[] | null }).data ?? []) as OddContribution[],
   }
 }
 
@@ -266,7 +281,7 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
   const data = await loadFiche(id)
   if (!data) notFound()
 
-  const { projet, indicateurs, temoignages, pays, partenariats, evenements, programme, representations, chaine } = data
+  const { projet, indicateurs, temoignages, pays, partenariats, evenements, programme, representations, chaine, oddContributions } = data
   const accent =
     programme?.couleur_theme ??
     PS_FALLBACK_COLOR[projet.ps_id ?? 'PS1'] ??
@@ -693,6 +708,30 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
             <ChaineResultats
               data={chaineData}
               activites={activitesStructurantes}
+              accentColor={accent}
+            />
+          </div>
+        </section>
+      )}
+
+      {/* ─── Contribution aux cibles ODD ──────────────────────────────────── */}
+      {oddContributions.length > 0 && (
+        <section className="py-12">
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="mb-6">
+              <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: accent }}>
+                Agenda 2030
+              </p>
+              <h2 className="font-editorial text-2xl md:text-3xl font-semibold text-[var(--oif-blue-dark)]">
+                Contribution aux cibles ODD
+              </h2>
+              <p className="text-gray-500 text-sm mt-1 max-w-2xl leading-relaxed">
+                Analyse des liens entre les indicateurs du projet et les Objectifs de développement durable (ODD)
+                de l&apos;Agenda 2030 des Nations Unies, selon les réalisations documentées en 2025.
+              </p>
+            </div>
+            <ContributionODD
+              contributions={oddContributions}
               accentColor={accent}
             />
           </div>

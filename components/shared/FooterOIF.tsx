@@ -35,8 +35,8 @@ export function FooterOIF() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/explorer" className="text-white/60 hover:text-white transition">
-                    Explorer
+                  <Link href="/resultats-era" className="text-white/60 hover:text-white transition">
+                    Résultats ERA
                   </Link>
                 </li>
                 <li>

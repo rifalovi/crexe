@@ -200,13 +200,26 @@ export async function GET(
     const supabase = await createClient()
 
     // Récupération parallèle
-    const [projRes, indRes, temRes, partRes, evtRes, psRes] = await Promise.all([
+    const [projRes, indRes, temRes, partRes, evtRes, psRes, oddRes] = await Promise.all([
       supabase.from('projets').select('*').eq('id', id).maybeSingle(),
       supabase.from('indicateurs').select('*').eq('projet_id', id).order('ordre'),
       supabase.from('temoignages').select('*').eq('projet_id', id).order('mise_en_avant', { ascending: false }),
       supabase.from('partenariats').select('*').eq('projet_id', id).order('ordre').limit(20),
       supabase.from('evenements').select('*').eq('projet_id', id).order('date_evenement').limit(20),
       supabase.from('programmes_strategiques').select('*'),
+      // ODD contributions — graceful fallback
+      (async () => {
+        try {
+          return await supabase
+            .from('odd_contributions')
+            .select('id, odd_numero, cible_codes, texte_contribution, niveau_contribution, ordre, odd_objectif:odd_objectifs(libelle, couleur_hex)')
+            .eq('projet_id', id)
+            .eq('edition_annee', 2025)
+            .order('ordre', { ascending: true })
+        } catch {
+          return { data: null, error: null }
+        }
+      })(),
     ])
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -225,6 +238,8 @@ export async function GET(
     const evenements   = (evtRes.data  ?? []) as any[]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ps           = ((psRes.data  ?? []) as any[]).find((p) => p.id === projet.ps_id)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oddContribs  = ((oddRes as { data: any[] | null }).data ?? []) as any[]
     const accent       = PS_COLORS[projet.ps_id as string] ?? OIF_BLUE
     const ci           = (projet.cercles_impact ?? {}) as Record<string, Record<string, string>>
 
@@ -552,11 +567,68 @@ export async function GET(
             }),
           ] : []),
 
-          // ── 7. NOTE MÉTHODOLOGIQUE ────────────────────────────────────────
-          new Paragraph({ children: [new PageBreak()] }),
-          sectionHeading("7 · Fiche méthodologique du visuel d'impact", accent),
+          // ── 7. CONTRIBUTION AUX ODD ──────────────────────────────────────
+          ...(oddContribs.length > 0 ? [
+            new Paragraph({ children: [new PageBreak()] }),
+            sectionHeading('7 · Contribution aux cibles ODD — Agenda 2030', accent),
+            new Paragraph({
+              children: [new TextRun({
+                text: "Analyse des liens entre les indicateurs du projet et les Objectifs de développement durable (ODD). Source : Note d'analyse OIF — mars 2026.",
+                size: 19, color: '666666', font: 'Arial', italics: true,
+              })],
+              spacing: { after: 200 },
+            }),
+            // Tableau des contributions ODD
+            new Table({
+              width: { size: 9360, type: WidthType.DXA },
+              columnWidths: [1600, 2600, 5160],
+              rows: [
+                new TableRow({
+                  children: [
+                    makeCell('ODD',           { bold: true, bg: OIF_DARK, color: WHITE, width: 1600, size: 19 }),
+                    makeCell('Cibles',        { bold: true, bg: OIF_DARK, color: WHITE, width: 2600, size: 19 }),
+                    makeCell('Contribution',  { bold: true, bg: OIF_DARK, color: WHITE, width: 5160, size: 19 }),
+                  ],
+                }),
+                ...oddContribs.map((oc, i) => {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const objLib = (oc.odd_objectif as any)?.libelle ?? `ODD ${oc.odd_numero}`
+                  const ciblesStr = (oc.cible_codes as string[]).map(c => `Cible ${c}`).join('\n')
+                  const niveauStr = oc.niveau_contribution === 'direct' ? 'Contribution directe' :
+                                    oc.niveau_contribution === 'indirect' ? 'Contribution indirecte' : 'Contribution potentielle'
+                  const rowBg = i % 2 === 0 ? WHITE : GRAY_LIGHT
+                  return new TableRow({
+                    children: [
+                      makeCell(`ODD ${oc.odd_numero}\n${objLib}`, { bold: true, color: accent, bg: rowBg, width: 1600, size: 18 }),
+                      makeCell(ciblesStr || '—', { bg: rowBg, width: 2600, size: 18, italic: true, color: GRAY_SUBTLE }),
+                      new TableCell({
+                        borders: tableBorders,
+                        width: { size: 5160, type: WidthType.DXA },
+                        shading: { fill: rowBg, type: ShadingType.CLEAR },
+                        margins: { top: 120, bottom: 120, left: 140, right: 140 },
+                        children: [
+                          new Paragraph({
+                            children: [new TextRun({ text: oc.texte_contribution ?? '', size: 18, color: GRAY_TEXT, font: 'Arial' })],
+                            spacing: { after: 60 },
+                          }),
+                          new Paragraph({
+                            children: [new TextRun({ text: niveauStr, size: 16, color: accent, bold: true, font: 'Arial' })],
+                          }),
+                        ],
+                      }),
+                    ],
+                  })
+                }),
+              ],
+            }),
+            new Paragraph({ children: [], spacing: { after: 200 } }),
+          ] : []),
 
-          subHeading('7.1 · Choix du format : les cercles concentriques', accent),
+          // ── 8. NOTE MÉTHODOLOGIQUE ────────────────────────────────────────
+          new Paragraph({ children: [new PageBreak()] }),
+          sectionHeading("8 · Fiche méthodologique du visuel d'impact", accent),
+
+          subHeading("8.1 · Choix du format : les cercles concentriques", accent),
           new Paragraph({
             children: [new TextRun({
               text: "La représentation en cercles concentriques traduit la mécanique de rayonnement propre à l'action OIF : chaque euro investi au cœur génère des effets qui s'amplifient à mesure qu'ils s'éloignent du centre — de la bénéficiaire directe à l'espace francophone entier.",
@@ -565,52 +637,18 @@ export async function GET(
             spacing: { after: 160 },
           }),
 
-          subHeading('7.2 · Palette chromatique', accent),
-          new Paragraph({
-            children: [new TextRun({
-              text: `Couleur principale du programme : #${accent}. Bleu OIF (#003DA5) pour les éléments institutionnels ; or (#D4A017) pour les chiffres-chocs.`,
-              size: 19, color: '555555', font: 'Arial',
-            })],
-            spacing: { after: 160 },
-          }),
-
-          subHeading('7.3 · Hiérarchie de preuve', accent),
+          subHeading("8.2 · Hiérarchie de preuve", accent),
           new Table({
             width: { size: 9360, type: WidthType.DXA },
             columnWidths: [2340, 7020],
             rows: [
-              new TableRow({ children: [labelCell('Mesuré', 2340), valueCell('Données issues d\'enquête directe auprès des bénéficiaires', { width: 7020 })] }),
+              new TableRow({ children: [labelCell('Mesuré', 2340), valueCell("Données issues d'enquête directe auprès des bénéficiaires", { width: 7020 })] }),
               new TableRow({ children: [labelCell('Estimé', 2340), valueCell('Projection méthodologique avec hypothèse documentée', { width: 7020 })] }),
               new TableRow({ children: [labelCell('Observé', 2340), valueCell('Constats issus de missions terrain et rapports de suivi', { width: 7020 })] }),
               new TableRow({ children: [labelCell('Institutionnel', 2340), valueCell('Effets documentés au niveau des politiques publiques', { width: 7020 })] }),
             ],
           }),
           new Paragraph({ children: [], spacing: { after: 200 } }),
-
-          // ── 8. ZONE LIBRE ─────────────────────────────────────────────────
-          sectionHeading('8 · Zone libre pour annotations', OIF_DARK),
-          new Paragraph({
-            children: [new TextRun({
-              text: "Cet espace est laissé vierge pour permettre à l'équipe communication OIF d'ajouter des éléments spécifiques à chaque usage.",
-              size: 19, color: '999999', italics: true, font: 'Arial',
-            })],
-            spacing: { after: 400 },
-          }),
-          new Paragraph({
-            children: [new TextRun({ text: ' ', size: 20 })],
-            spacing: { after: 1440 },
-            border: { bottom: { style: BorderStyle.DASHED, size: 4, color: GRAY_MID, space: 1 } },
-          }),
-          new Paragraph({
-            children: [new TextRun({ text: ' ', size: 20 })],
-            spacing: { after: 1440 },
-            border: { bottom: { style: BorderStyle.DASHED, size: 4, color: GRAY_MID, space: 1 } },
-          }),
-          new Paragraph({
-            children: [new TextRun({ text: ' ', size: 20 })],
-            spacing: { after: 1440 },
-            border: { bottom: { style: BorderStyle.DASHED, size: 4, color: GRAY_MID, space: 1 } },
-          }),
         ],
       }],
     })

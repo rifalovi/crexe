@@ -26,10 +26,10 @@ export function NavOIF() {
             Projets
           </Link>
           <Link
-            href="/explorer"
+            href="/resultats-era"
             className="text-white/60 hover:text-white text-sm transition"
           >
-            Explorer
+            Résultats ERA
           </Link>
           <Link
             href="/a-propos"

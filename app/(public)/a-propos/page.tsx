@@ -162,7 +162,7 @@ export default function AProposPage() {
           </div>
           <div className="hidden md:flex items-center gap-6">
             <Link href="/projets" className="text-white/60 hover:text-white text-sm transition">Projets</Link>
-            <Link href="/explorer" className="text-white/60 hover:text-white text-sm transition">Explorer</Link>
+            <Link href="/resultats-era" className="text-white/60 hover:text-white text-sm transition">Résultats ERA</Link>
             <Link href="/a-propos" className="text-white text-sm font-medium border-b border-white/40 pb-0.5">Méthodologie</Link>
           </div>
           <Link href="/admin" className="text-xs text-white/40 hover:text-white/80 transition">Espace admin →</Link>

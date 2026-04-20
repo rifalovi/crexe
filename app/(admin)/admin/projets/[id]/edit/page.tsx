@@ -136,6 +136,20 @@ interface ChaineForm {
   activites_structurantes: string // JSON brut editable
 }
 
+interface EraForm {
+  edition_annee: string           // ex: '2025'
+  objectif_era: string
+  methodologie: string
+  questionnaire: string
+  population_estimee: string
+  echantillon_prevu: string
+  nombre_retours: string
+  taux_completude: string         // pourcentage
+  tableaux_resultats: string      // JSON brut
+  analyse_ia: string
+  statut_era: 'brouillon' | 'en_revue' | 'publie'
+}
+
 // ─── Constantes ──────────────────────────────────────────────────────────────
 
 const PS_OPTIONS = [
@@ -295,7 +309,7 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
   )
 
   // ─── État de navigation ────────────────────────────────────────────────
-  type TabId = 'projet' | 'indicateurs' | 'cercles' | 'temoignages' | 'partenaires' | 'evenements' | 'chaine'
+  type TabId = 'projet' | 'indicateurs' | 'cercles' | 'temoignages' | 'partenaires' | 'evenements' | 'chaine' | 'era'
   const [activeTab, setActiveTab] = useState<TabId>('projet')
 
   // ─── États des données ─────────────────────────────────────────────────
@@ -325,6 +339,13 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
     activites_structurantes: '[]',
   }
   const [chaine, setChaine] = useState<ChaineForm>(EMPTY_CHAINE)
+
+  const EMPTY_ERA: EraForm = {
+    edition_annee: '2025', objectif_era: '', methodologie: '', questionnaire: '',
+    population_estimee: '', echantillon_prevu: '', nombre_retours: '', taux_completude: '',
+    tableaux_resultats: '[]', analyse_ia: '', statut_era: 'brouillon',
+  }
+  const [era, setEra] = useState<EraForm>(EMPTY_ERA)
 
   // ─── États UI ──────────────────────────────────────────────────────────
   const [loading, setLoading] = useState(true)
@@ -500,6 +521,33 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
         }
       } catch { /* table pas encore créée */ }
 
+      // ERA résultats
+      try {
+        const { data: eraRow } = await supabase
+          .from('era_resultats')
+          .select('*')
+          .eq('projet_id', projetId)
+          .order('edition_annee', { ascending: false })
+          .limit(1)
+          .maybeSingle()
+
+        if (eraRow) {
+          setEra({
+            edition_annee:     String(eraRow.edition_annee ?? 2025),
+            objectif_era:      eraRow.objectif_era ?? '',
+            methodologie:      eraRow.methodologie ?? '',
+            questionnaire:     eraRow.questionnaire ?? '',
+            population_estimee: String(eraRow.population_estimee ?? ''),
+            echantillon_prevu:  String(eraRow.echantillon_prevu ?? ''),
+            nombre_retours:     String(eraRow.nombre_retours ?? ''),
+            taux_completude:    String(eraRow.taux_completude ?? ''),
+            tableaux_resultats: JSON.stringify(eraRow.tableaux_resultats ?? [], null, 2),
+            analyse_ia:         eraRow.analyse_ia ?? '',
+            statut_era:         (eraRow.statut ?? 'brouillon') as EraForm['statut_era'],
+          })
+        }
+      } catch { /* table pas encore créée — migration à appliquer */ }
+
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : 'Erreur de chargement')
     } finally {
@@ -671,6 +719,25 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
       }
       await supabase.from('chaine_resultats').upsert(chainePayload, { onConflict: 'projet_id' })
 
+      // ERA résultats
+      try {
+        const eraPayload = {
+          projet_id:          projetId,
+          edition_annee:      parseInt(era.edition_annee) || 2025,
+          objectif_era:       era.objectif_era,
+          methodologie:       era.methodologie,
+          questionnaire:      era.questionnaire,
+          population_estimee: era.population_estimee ? parseInt(era.population_estimee) : null,
+          echantillon_prevu:  era.echantillon_prevu  ? parseInt(era.echantillon_prevu)  : null,
+          nombre_retours:     era.nombre_retours     ? parseInt(era.nombre_retours)     : null,
+          taux_completude:    era.taux_completude    ? parseFloat(era.taux_completude)  : null,
+          tableaux_resultats: (() => { try { return JSON.parse(era.tableaux_resultats) } catch { return [] } })(),
+          analyse_ia:         era.analyse_ia,
+          statut:             era.statut_era,
+        }
+        await supabase.from('era_resultats').upsert(eraPayload, { onConflict: 'projet_id,edition_annee' })
+      } catch { /* table pas encore migrée */ }
+
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
 
@@ -744,6 +811,7 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
     { key: 'indicateurs', label: 'Indicateurs',     count: indCount },
     { key: 'cercles',     label: 'Niveaux',          count: undefined },
     { key: 'chaine',      label: 'Chaîne ERA',       count: undefined },
+    { key: 'era',         label: 'Résultat enquête', count: undefined },
     { key: 'temoignages', label: 'Témoignages',      count: temCount },
     { key: 'partenaires', label: 'Partenaires',      count: partCount },
     { key: 'evenements',  label: 'Événements',       count: evtCount },
@@ -1662,6 +1730,154 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
               rows={10}
               placeholder={'[\n  {"volume": "1 264", "action": "Actions de renforcement des capacités"},\n  {"volume": "9 475", "action": "Femmes ayant obtenu un accès direct à une AGR"}\n]'}
             />
+          </div>
+        </div>
+      )}
+
+      {/* ── Onglet Résultat enquête ERA ─────────────────────────────── */}
+      {activeTab === 'era' && (
+        <div className="space-y-6">
+          <div className="bg-[#B83A2D]/5 border border-[#B83A2D]/20 rounded-xl p-4 text-sm text-[#B83A2D]">
+            <strong>Résultats d'enquête ERA</strong> — Renseignez les résultats de l'enquête qualitative
+            pour ce projet. Les lecteurs assignés pourront consulter ces données depuis leur espace personnel.
+          </div>
+
+          {/* Édition CREX + statut ERA */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#B83A2D] mb-4">
+              Édition et statut
+            </h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Field label="Édition CREX" hint="Année de l'exercice (ex: 2025)">
+                <TextInput
+                  value={era.edition_annee}
+                  onChange={v => setEra(e => ({ ...e, edition_annee: v }))}
+                  placeholder="2025"
+                />
+              </Field>
+              <Field label="Statut ERA">
+                <select
+                  value={era.statut_era}
+                  onChange={ev => setEra(e => ({ ...e, statut_era: ev.target.value as EraForm['statut_era'] }))}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]"
+                >
+                  <option value="brouillon">Brouillon (non visible par les lecteurs)</option>
+                  <option value="en_revue">En révision (visible par les lecteurs assignés)</option>
+                  <option value="publie">Publié (visible par tous)</option>
+                </select>
+              </Field>
+            </div>
+          </div>
+
+          {/* Section Rappel */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#B83A2D] mb-4">
+              Section Rappel
+            </h3>
+            <Field label="Objectif ERA" hint="Décrivez l'objectif principal de l'enquête pour ce projet">
+              <TextArea
+                value={era.objectif_era}
+                onChange={v => setEra(e => ({ ...e, objectif_era: v }))}
+                rows={4}
+                placeholder="Documenter les effets des actions de l'OIF sur les bénéficiaires du projet…"
+              />
+            </Field>
+            <Field label="Méthodologie" hint="Approche, outils, délais de collecte">
+              <TextArea
+                value={era.methodologie}
+                onChange={v => setEra(e => ({ ...e, methodologie: v }))}
+                rows={4}
+                placeholder="Questionnaires numériques via Survey Solutions, diffusés par les équipes terrain…"
+              />
+            </Field>
+            <Field label="Questionnaire (copie)" hint="Collez ici le texte intégral du questionnaire utilisé">
+              <TextArea
+                value={era.questionnaire}
+                onChange={v => setEra(e => ({ ...e, questionnaire: v }))}
+                rows={8}
+                placeholder="Q1. Dans quelle mesure les formations reçues ont-elles amélioré vos compétences…"
+              />
+            </Field>
+          </div>
+
+          {/* Section Résultats — métriques */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#B83A2D] mb-4">
+              Section Résultats — Collecte
+            </h3>
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <Field label="Population d'enquête estimée">
+                <TextInput
+                  value={era.population_estimee}
+                  onChange={v => setEra(e => ({ ...e, population_estimee: v }))}
+                  placeholder="ex: 9706"
+                />
+              </Field>
+              <Field label="Échantillon prévu (Schwartz)">
+                <TextInput
+                  value={era.echantillon_prevu}
+                  onChange={v => setEra(e => ({ ...e, echantillon_prevu: v }))}
+                  placeholder="ex: 370"
+                />
+              </Field>
+              <Field label="Nombre de retours reçus">
+                <TextInput
+                  value={era.nombre_retours}
+                  onChange={v => setEra(e => ({ ...e, nombre_retours: v }))}
+                  placeholder="ex: 312"
+                />
+              </Field>
+              <Field label="Taux de complétion (%)">
+                <TextInput
+                  value={era.taux_completude}
+                  onChange={v => setEra(e => ({ ...e, taux_completude: v }))}
+                  placeholder="ex: 84.3"
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* Section Résultats — Tableaux */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#B83A2D] mb-2">
+              Tableaux de résultats détaillés
+            </h3>
+            <p className="text-xs text-gray-400 mb-4">
+              Format JSON : tableau d&apos;objets <code className="bg-gray-100 px-1 rounded text-[10px]">[{'{'}titre, colonnes:[], lignes:[{'{'}libelle, [col]:val{'}'}]{'}'}]</code>.
+              Chaque ligne contient un <code className="bg-gray-100 px-1 rounded text-[10px]">libelle</code> et les valeurs pour chaque colonne.
+              Exemple colonne : <code className="bg-gray-100 px-1 rounded text-[10px]">"Effectif"</code>, <code className="bg-gray-100 px-1 rounded text-[10px]">"Taux (%)"</code>
+            </p>
+            <TextArea
+              value={era.tableaux_resultats}
+              onChange={v => setEra(e => ({ ...e, tableaux_resultats: v }))}
+              rows={14}
+              placeholder={'[\n  {\n    "titre": "Amélioration des compétences techniques",\n    "colonnes": ["Effectif", "Taux (%)"],\n    "lignes": [\n      {"libelle": "Oui, nettement améliorées", "Effectif": 218, "Taux (%)": "69,9"},\n      {"libelle": "Oui, légèrement améliorées", "Effectif": 72, "Taux (%)": "23,1"},\n      {"libelle": "Non améliorées", "Effectif": 22, "Taux (%)": "7,0"},\n      {"libelle": "Total", "Effectif": 312, "Taux (%)": "100"}\n    ]\n  }\n]'}
+            />
+            <p className="text-[11px] text-amber-600 mt-2 flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+              L&apos;import automatique depuis Excel ou DOCX sera disponible prochainement (IA).
+            </p>
+          </div>
+
+          {/* Analyse IA */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-[#B83A2D] mb-2">
+              Analyse IA des résultats
+            </h3>
+            <p className="text-xs text-gray-400 mb-4">
+              Saisissez ou collez ici l&apos;analyse narrative des résultats. Ce texte sera affiché
+              dans l&apos;espace lecteur et pourra être exporté en DOCX.
+            </p>
+            <TextArea
+              value={era.analyse_ia}
+              onChange={v => setEra(e => ({ ...e, analyse_ia: v }))}
+              rows={10}
+              placeholder="L'enquête ERA 2025 révèle que 69,9 % des bénéficiaires déclarent une amélioration nette de leurs compétences techniques…"
+            />
+            <p className="text-[11px] text-[var(--oif-blue)] mt-2 flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.091z"/></svg>
+              La génération automatique d&apos;analyse via IA sera disponible dans la prochaine version.
+            </p>
           </div>
         </div>
       )}

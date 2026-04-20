@@ -224,8 +224,8 @@ export default async function HomePage() {
             <Link href="/projets" className="text-white/60 hover:text-white text-sm transition">
               Projets
             </Link>
-            <Link href="/explorer" className="text-white/60 hover:text-white text-sm transition">
-              Explorer
+            <Link href="/resultats-era" className="text-white/60 hover:text-white text-sm transition">
+              Résultats ERA
             </Link>
             <Link href="/a-propos" className="text-white/60 hover:text-white text-sm transition">
               Méthodologie
@@ -321,6 +321,22 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ─── Bandeau avertissement MVP PS3 ──────────────────────────── */}
+      {/* Notice institutionnelle : seuls les projets PS3 sont disponibles dans ce MVP */}
+      <div className="bg-[#B83A2D] text-white">
+        <div className="max-w-7xl mx-auto px-6 py-3 flex items-center gap-3">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="flex-shrink-0">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+          </svg>
+          <p className="text-sm">
+            <span className="font-bold">Version de démonstration — MVP</span>
+            {' '}· Seuls les projets du{' '}
+            <span className="font-bold underline">Programme stratégique 3 (PS3)</span>
+            {' '}sont disponibles pour cette validation. Les données PS1 et PS2 seront intégrées progressivement.
+          </p>
+        </div>
+      </div>
+
       {/* ─── Section Programmes stratégiques ─────────────────────────── */}
       {/* Les 3 PS structurent TOUS les projets OIF.
           Chaque PS a une couleur et une thématique distincte. */}
@@ -335,7 +351,7 @@ export default async function HomePage() {
             </h2>
             <p className="text-gray-500 mt-2 max-w-xl">
               L&apos;action de l&apos;OIF s&apos;organise autour de trois grands axes qui guident
-              l&apos;ensemble des 22 projets du CREXE 2025.
+              l&apos;ensemble des 20 projets du CREXE 2025.
             </p>
           </div>
 
@@ -465,7 +481,7 @@ export default async function HomePage() {
                 Données en cours d&apos;intégration
               </p>
               <p className="text-sm text-gray-500 max-w-sm mx-auto mb-6">
-                Les {totalProjets > 0 ? totalProjets : 22} projets du CREXE 2025 sont en cours
+                Les {totalProjets > 0 ? totalProjets : 20} projets du CREXE 2025 sont en cours
                 de documentation et de validation. Les fiches seront publiées progressivement.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-gray-400">
