@@ -124,6 +124,18 @@ interface EvenementForm {
   _deleted?: boolean
 }
 
+interface ChaineForm {
+  extrants_titre: string
+  extrants_items: string          // textarea : un item par ligne
+  effets_immediats_titre: string
+  effets_immediats_items: string
+  effets_intermediaires_titre: string
+  effets_intermediaires_items: string
+  impact_titre: string
+  impact_items: string
+  activites_structurantes: string // JSON brut editable
+}
+
 // ─── Constantes ──────────────────────────────────────────────────────────────
 
 const PS_OPTIONS = [
@@ -283,7 +295,7 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
   )
 
   // ─── État de navigation ────────────────────────────────────────────────
-  type TabId = 'projet' | 'indicateurs' | 'cercles' | 'temoignages' | 'partenaires' | 'evenements'
+  type TabId = 'projet' | 'indicateurs' | 'cercles' | 'temoignages' | 'partenaires' | 'evenements' | 'chaine'
   const [activeTab, setActiveTab] = useState<TabId>('projet')
 
   // ─── États des données ─────────────────────────────────────────────────
@@ -305,6 +317,14 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
   const [temoignages, setTemoignages] = useState<TemoignageForm[]>([])
   const [partenaires, setPartenaires] = useState<PartenaireForm[]>([])
   const [evenements, setEvenements] = useState<EvenementForm[]>([])
+  const EMPTY_CHAINE: ChaineForm = {
+    extrants_titre: '', extrants_items: '',
+    effets_immediats_titre: '', effets_immediats_items: '',
+    effets_intermediaires_titre: '', effets_intermediaires_items: '',
+    impact_titre: '', impact_items: '',
+    activites_structurantes: '[]',
+  }
+  const [chaine, setChaine] = useState<ChaineForm>(EMPTY_CHAINE)
 
   // ─── États UI ──────────────────────────────────────────────────────────
   const [loading, setLoading] = useState(true)
@@ -455,6 +475,29 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
           mise_en_avant: e.mise_en_avant ?? false,
           ordre: e.ordre ?? 0,
         })))
+      } catch { /* table pas encore créée */ }
+
+      // Chaîne des résultats
+      try {
+        const { data: cr } = await supabase
+          .from('chaine_resultats')
+          .select('*')
+          .eq('projet_id', projetId)
+          .maybeSingle()
+
+        if (cr) {
+          setChaine({
+            extrants_titre:               cr.extrants_titre ?? '',
+            extrants_items:               (cr.extrants_items ?? []).join('\n'),
+            effets_immediats_titre:       cr.effets_immediats_titre ?? '',
+            effets_immediats_items:       (cr.effets_immediats_items ?? []).join('\n'),
+            effets_intermediaires_titre:  cr.effets_intermediaires_titre ?? '',
+            effets_intermediaires_items:  (cr.effets_intermediaires_items ?? []).join('\n'),
+            impact_titre:                 cr.impact_titre ?? '',
+            impact_items:                 (cr.impact_items ?? []).join('\n'),
+            activites_structurantes:      JSON.stringify(cr.activites_structurantes ?? [], null, 2),
+          })
+        }
       } catch { /* table pas encore créée */ }
 
     } catch (err) {
@@ -613,6 +656,21 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
         }
       }
 
+      // ─── Sauvegarde chaîne des résultats ──────────────────────────────
+      const chainePayload = {
+        projet_id:                    projetId,
+        extrants_titre:               chaine.extrants_titre,
+        extrants_items:               chaine.extrants_items.split('\n').map(s => s.trim()).filter(Boolean),
+        effets_immediats_titre:       chaine.effets_immediats_titre,
+        effets_immediats_items:       chaine.effets_immediats_items.split('\n').map(s => s.trim()).filter(Boolean),
+        effets_intermediaires_titre:  chaine.effets_intermediaires_titre,
+        effets_intermediaires_items:  chaine.effets_intermediaires_items.split('\n').map(s => s.trim()).filter(Boolean),
+        impact_titre:                 chaine.impact_titre,
+        impact_items:                 chaine.impact_items.split('\n').map(s => s.trim()).filter(Boolean),
+        activites_structurantes:      (() => { try { return JSON.parse(chaine.activites_structurantes) } catch { return [] } })(),
+      }
+      await supabase.from('chaine_resultats').upsert(chainePayload, { onConflict: 'projet_id' })
+
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
 
@@ -683,11 +741,12 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
   // ─── Onglets ──────────────────────────────────────────────────────────
   const TABS: { key: TabId; label: string; count?: number }[] = [
     { key: 'projet',      label: 'Projet' },
-    { key: 'indicateurs', label: 'Indicateurs',  count: indCount },
-    { key: 'cercles',     label: 'Niveaux',       count: undefined },
-    { key: 'temoignages', label: 'Témoignages',   count: temCount },
-    { key: 'partenaires', label: 'Partenaires',   count: partCount },
-    { key: 'evenements',  label: 'Événements',    count: evtCount },
+    { key: 'indicateurs', label: 'Indicateurs',     count: indCount },
+    { key: 'cercles',     label: 'Niveaux',          count: undefined },
+    { key: 'chaine',      label: 'Chaîne ERA',       count: undefined },
+    { key: 'temoignages', label: 'Témoignages',      count: temCount },
+    { key: 'partenaires', label: 'Partenaires',      count: partCount },
+    { key: 'evenements',  label: 'Événements',       count: evtCount },
   ]
 
   if (loading) {
@@ -1478,6 +1537,135 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
       )}
 
       {/* ── Bouton sauvegarder (sticky bas de page) ── */}
+      {/* ─── Onglet Chaîne des résultats ──────────────────────────────── */}
+      {activeTab === 'chaine' && (
+        <div className="space-y-6">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+            <strong>Chaîne de résultats CAD-OCDE</strong> — Saisissez le titre narratif de chaque niveau,
+            puis les items détaillés (un par ligne). Les flèches et couleurs sont générées automatiquement.
+          </div>
+
+          {/* Couleur guide */}
+          <div className="flex flex-wrap gap-3">
+            {[
+              { label: 'Impact (4)',             color: '#6B2C91' },
+              { label: 'Effets interméd. (3)',   color: '#B83A2D' },
+              { label: 'Effets immédiats (2)',   color: '#C07A10' },
+              { label: 'Extrants (1)',            color: '#0F6E56' },
+            ].map(({ label, color }) => (
+              <span key={label} className="flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full text-white"
+                style={{ backgroundColor: color }}>
+                {label}
+              </span>
+            ))}
+          </div>
+
+          {/* Niveau IMPACT */}
+          <div className="bg-white rounded-xl border-2 border-[#6B2C91]/30 p-5">
+            <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#6B2C91' }}>
+              Niveau 4 — Impact (long terme)
+            </h3>
+            <Field label="Titre du niveau">
+              <TextInput
+                value={chaine.impact_titre}
+                onChange={v => setChaine(c => ({ ...c, impact_titre: v }))}
+                placeholder="ex: Réduction des inégalités entre hommes et femmes…"
+              />
+            </Field>
+            <Field label="Items détaillés" hint="Un item par ligne">
+              <TextArea
+                value={chaine.impact_items}
+                onChange={v => setChaine(c => ({ ...c, impact_items: v }))}
+                rows={5}
+                placeholder={"L'amélioration des revenus permet aux femmes de...\nL'amélioration des conditions économiques..."}
+              />
+            </Field>
+          </div>
+
+          {/* Niveau EFFETS INTERMÉDIAIRES */}
+          <div className="bg-white rounded-xl border-2 border-[#B83A2D]/30 p-5">
+            <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#B83A2D' }}>
+              Niveau 3 — Effets intermédiaires (moyen terme)
+            </h3>
+            <Field label="Titre du niveau">
+              <TextInput
+                value={chaine.effets_intermediaires_titre}
+                onChange={v => setChaine(c => ({ ...c, effets_intermediaires_titre: v }))}
+                placeholder="ex: Le projet a eu un impact significatif sur la situation économique…"
+              />
+            </Field>
+            <Field label="Items détaillés" hint="Un item par ligne">
+              <TextArea
+                value={chaine.effets_intermediaires_items}
+                onChange={v => setChaine(c => ({ ...c, effets_intermediaires_items: v }))}
+                rows={5}
+                placeholder={'58 % d\'entre elles ont vu leurs revenus augmenter…\nAccès au système financier formel…'}
+              />
+            </Field>
+          </div>
+
+          {/* Niveau EFFETS IMMÉDIATS */}
+          <div className="bg-white rounded-xl border-2 border-[#C07A10]/30 p-5">
+            <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#C07A10' }}>
+              Niveau 2 — Effets immédiats (court terme)
+            </h3>
+            <Field label="Titre du niveau">
+              <TextInput
+                value={chaine.effets_immediats_titre}
+                onChange={v => setChaine(c => ({ ...c, effets_immediats_titre: v }))}
+                placeholder="ex: 100 % des femmes bénéficiaires ont développé…"
+              />
+            </Field>
+            <Field label="Items détaillés" hint="Un item par ligne">
+              <TextArea
+                value={chaine.effets_immediats_items}
+                onChange={v => setChaine(c => ({ ...c, effets_immediats_items: v }))}
+                rows={6}
+                placeholder={'70 % de femmes formées en production maraîchère…\n31 % de femmes sur la transformation…'}
+              />
+            </Field>
+          </div>
+
+          {/* Niveau EXTRANTS */}
+          <div className="bg-white rounded-xl border-2 border-[#0F6E56]/30 p-5">
+            <h3 className="text-sm font-bold uppercase tracking-wider mb-4" style={{ color: '#0F6E56' }}>
+              Niveau 1 — Extrants (réalisations directes)
+            </h3>
+            <Field label="Titre du niveau">
+              <TextInput
+                value={chaine.extrants_titre}
+                onChange={v => setChaine(c => ({ ...c, extrants_titre: v }))}
+                placeholder="ex: Réalisations directes du Fonds — exercice 2025"
+              />
+            </Field>
+            <Field label="Items détaillés" hint="Un item par ligne">
+              <TextArea
+                value={chaine.extrants_items}
+                onChange={v => setChaine(c => ({ ...c, extrants_items: v }))}
+                rows={7}
+                placeholder={'50 projets soutenus dans le cadre du Fonds…\n9 706 femmes ont accès à une AGR…'}
+              />
+            </Field>
+          </div>
+
+          {/* Activités structurantes */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-1">
+              Tableau des activités structurantes
+            </h3>
+            <p className="text-xs text-gray-400 mb-4">
+              Format JSON : <code className="bg-gray-100 px-1 rounded">[{'{'}&#34;volume&#34;: &#34;1 264&#34;, &#34;action&#34;: &#34;Actions de renforcement&#34;{'}'}]</code>
+            </p>
+            <TextArea
+              value={chaine.activites_structurantes}
+              onChange={v => setChaine(c => ({ ...c, activites_structurantes: v }))}
+              rows={10}
+              placeholder={'[\n  {"volume": "1 264", "action": "Actions de renforcement des capacités"},\n  {"volume": "9 475", "action": "Femmes ayant obtenu un accès direct à une AGR"}\n]'}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="sticky bottom-6 flex justify-end mt-8">
         <div className="bg-white shadow-lg rounded-xl border border-gray-100 px-4 py-3 flex items-center gap-3">
           {saveError && (

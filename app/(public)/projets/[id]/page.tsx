@@ -22,6 +22,7 @@ import { createClient } from '@/lib/supabase/server'
 import { BadgePreuve } from '@/components/shared/BadgePreuve'
 import { CercleImpact, type CerclesImpactData } from '@/components/visuals/CercleImpact'
 import { AnimatedCounter } from '@/components/shared/AnimatedCounter'
+import { ChaineResultats, type ChaineResultatsData, type ActiviteStructurante } from '@/components/shared/ChaineResultats'
 import type { TypePreuve } from '@/types/database'
 
 // ─── Types locaux ─────────────────────────────────────────────────────────────
@@ -102,6 +103,18 @@ interface Programme {
   couleur_theme: string | null
 }
 
+interface ChaineRow {
+  extrants_titre: string | null
+  extrants_items: string[] | null
+  effets_immediats_titre: string | null
+  effets_immediats_items: string[] | null
+  effets_intermediaires_titre: string | null
+  effets_intermediaires_items: string[] | null
+  impact_titre: string | null
+  impact_items: string[] | null
+  activites_structurantes: ActiviteStructurante[] | null
+}
+
 interface Representation {
   id: number
   nom: string
@@ -138,7 +151,7 @@ async function loadFiche(id: string) {
   const projet = rawProjet as ProjetRow | null
   if (!projet) return null
 
-  const [indicRes, temoRes, paysRes, partRes, evtRes, psRes, repexRes] = await Promise.all([
+  const [indicRes, temoRes, paysRes, partRes, evtRes, psRes, repexRes, chaineRes] = await Promise.all([
     supabase
       .from('indicateurs')
       .select('id, libelle, valeur_numerique, valeur_pourcentage, unite, categorie, type_preuve, source, hypothese_calcul, mise_en_avant, ordre')
@@ -182,6 +195,18 @@ async function loadFiche(id: string) {
         return { data: null, error: null }
       }
     })(),
+    // Chaîne des résultats — graceful fallback
+    (async () => {
+      try {
+        return await supabase
+          .from('chaine_resultats')
+          .select('extrants_titre, extrants_items, effets_immediats_titre, effets_immediats_items, effets_intermediaires_titre, effets_intermediaires_items, impact_titre, impact_items, activites_structurantes')
+          .eq('projet_id', id)
+          .maybeSingle()
+      } catch {
+        return { data: null, error: null }
+      }
+    })(),
   ])
 
   return {
@@ -193,6 +218,7 @@ async function loadFiche(id: string) {
     evenements: (evtRes.data ?? []) as Evenement[],
     programme: (psRes.data ?? null) as Programme | null,
     representations: ((repexRes as { data: unknown[] | null }).data ?? []) as Representation[],
+    chaine: ((chaineRes as { data: unknown | null }).data ?? null) as ChaineRow | null,
   }
 }
 
@@ -240,11 +266,33 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
   const data = await loadFiche(id)
   if (!data) notFound()
 
-  const { projet, indicateurs, temoignages, pays, partenariats, evenements, programme, representations } = data
+  const { projet, indicateurs, temoignages, pays, partenariats, evenements, programme, representations, chaine } = data
   const accent =
     programme?.couleur_theme ??
     PS_FALLBACK_COLOR[projet.ps_id ?? 'PS1'] ??
     '#003DA5'
+
+  // Construction de l'objet ChaineResultatsData depuis la DB
+  const chaineData: ChaineResultatsData | null = chaine ? {
+    impact: {
+      titre: chaine.impact_titre ?? '',
+      items: chaine.impact_items ?? [],
+    },
+    effets_intermediaires: {
+      titre: chaine.effets_intermediaires_titre ?? '',
+      items: chaine.effets_intermediaires_items ?? [],
+    },
+    effets_immediats: {
+      titre: chaine.effets_immediats_titre ?? '',
+      items: chaine.effets_immediats_items ?? [],
+    },
+    extrants: {
+      titre: chaine.extrants_titre ?? '',
+      items: chaine.extrants_items ?? [],
+    },
+  } : null
+
+  const activitesStructurantes: ActiviteStructurante[] = chaine?.activites_structurantes ?? []
 
   const kpisMisEnAvant = indicateurs.filter((i) => i.mise_en_avant)
   const autresIndicateurs = indicateurs.filter((i) => !i.mise_en_avant)
@@ -429,6 +477,37 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
         </section>
       )}
 
+      {/* ─── Fiche signalétique ───────────────────────────────────────────── */}
+      <section className="bg-white border-t border-gray-100 py-10">
+        <div className="max-w-6xl mx-auto px-6">
+          <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{ color: accent }}>
+            Fiche signalétique
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {[
+              projet.code_officiel && { label: 'Code officiel', value: projet.code_officiel },
+              programme && { label: 'Programme', value: programme.nom_court ?? programme.id },
+              { label: 'Exercice', value: String(projet.annee_exercice) },
+              projet.budget_engage != null && { label: 'Budget engagé', value: formatBudget(projet.budget_engage)! },
+              projet.budget_modifie != null && { label: 'Budget alloué', value: formatBudget(projet.budget_modifie)! },
+              projet.engagement_global != null && { label: 'Engagement global', value: formatBudget(projet.engagement_global)! },
+              projet.taux_execution != null && { label: "Taux d'exécution", value: `${projet.taux_execution} %` },
+              projet.nombre_pays != null && { label: 'Couverture géo.', value: `${projet.nombre_pays} pays` },
+              projet.nombre_projets_deposes != null && { label: 'Candidatures reçues', value: formatNombre(projet.nombre_projets_deposes)! },
+              projet.nombre_projets_retenus != null && { label: 'Projets retenus', value: formatNombre(projet.nombre_projets_retenus)! },
+            ].filter(Boolean).map((item, i) => {
+              const { label, value } = item as { label: string; value: string }
+              return (
+                <div key={i} className="bg-[var(--oif-neutral)] rounded-xl px-4 py-3 border border-gray-100">
+                  <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1">{label}</p>
+                  <p className="font-semibold text-[var(--oif-blue-dark)] text-sm leading-snug">{value}</p>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ─── Synthèse des effets (3 KPI conditionnels) ────────────────────── */}
       {hasSynthese && (
         <section className="bg-[var(--oif-neutral)] py-10 border-t border-gray-100">
@@ -574,6 +653,48 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
                 />
               ) : null}
             </div>
+          </div>
+        </section>
+      )}
+
+      {/* ─── Chaîne des résultats — Pipeline interactif ──────────────────── */}
+      {chaineData && (
+        <section className="py-16 bg-white border-t border-gray-100">
+          <div className="max-w-6xl mx-auto px-6">
+            {/* En-tête */}
+            <div className="flex flex-wrap items-start justify-between gap-6 mb-10">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-6 h-0.5 rounded-full" style={{ background: `linear-gradient(90deg, #0F6E56, #C07A10, #B83A2D, #6B2C91)` }} />
+                  <p className="text-xs font-bold uppercase tracking-widest text-gray-400">
+                    Théorie du changement · CAD-OCDE
+                  </p>
+                </div>
+                <h2 className="font-editorial text-3xl md:text-4xl font-semibold text-[var(--oif-blue-dark)] mb-3">
+                  Chaîne des résultats
+                </h2>
+                <p className="text-gray-500 max-w-2xl text-sm leading-relaxed">
+                  Visualisation de la cascade d&apos;effets : des réalisations directes (extrants) vers l&apos;impact
+                  structurel à long terme. Cliquez sur chaque niveau pour afficher le détail.
+                </p>
+              </div>
+              {/* Indicateur de lecture */}
+              <div className="hidden lg:flex flex-col items-center gap-1 text-xs text-gray-300 flex-shrink-0 border border-gray-100 rounded-xl p-4 bg-gray-50">
+                <div className="flex gap-1 items-center flex-wrap justify-center mb-1">
+                  {['#0F6E56','#C07A10','#B83A2D','#6B2C91'].map((c, i) => (
+                    <span key={i} className="w-3 h-3 rounded-sm" style={{ backgroundColor: c }} />
+                  ))}
+                </div>
+                <span className="text-center leading-relaxed" style={{ fontSize: '10px' }}>
+                  Lecture<br/>ascendante ↑
+                </span>
+              </div>
+            </div>
+            <ChaineResultats
+              data={chaineData}
+              activites={activitesStructurantes}
+              accentColor={accent}
+            />
           </div>
         </section>
       )}
