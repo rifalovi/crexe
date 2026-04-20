@@ -21,6 +21,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { BadgePreuve } from '@/components/shared/BadgePreuve'
 import { CercleImpact, type CerclesImpactData } from '@/components/visuals/CercleImpact'
+import { AnimatedCounter } from '@/components/shared/AnimatedCounter'
 import type { TypePreuve } from '@/types/database'
 
 // ─── Types locaux ─────────────────────────────────────────────────────────────
@@ -101,6 +102,20 @@ interface Programme {
   couleur_theme: string | null
 }
 
+interface Representation {
+  id: number
+  nom: string
+  acronyme: string | null
+  type: string | null
+  region: string | null
+  ville: string | null
+  pays_code: string | null
+  role_dans_projet: string | null
+  description: string | null
+  mise_en_avant: boolean
+  ordre: number
+}
+
 const PS_FALLBACK_COLOR: Record<string, string> = {
   PS1: '#003DA5',
   PS2: '#6B2C91',
@@ -123,7 +138,7 @@ async function loadFiche(id: string) {
   const projet = rawProjet as ProjetRow | null
   if (!projet) return null
 
-  const [indicRes, temoRes, paysRes, partRes, evtRes, psRes] = await Promise.all([
+  const [indicRes, temoRes, paysRes, partRes, evtRes, psRes, repexRes] = await Promise.all([
     supabase
       .from('indicateurs')
       .select('id, libelle, valeur_numerique, valeur_pourcentage, unite, categorie, type_preuve, source, hypothese_calcul, mise_en_avant, ordre')
@@ -155,6 +170,18 @@ async function loadFiche(id: string) {
           .eq('id', projet.ps_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    // REPEX — graceful fallback si la table n'existe pas encore
+    (async () => {
+      try {
+        return await supabase
+          .from('representations')
+          .select('id, nom, acronyme, type, region, ville, pays_code, role_dans_projet, description, mise_en_avant, ordre')
+          .eq('projet_id', id)
+          .order('ordre', { ascending: true })
+      } catch {
+        return { data: null, error: null }
+      }
+    })(),
   ])
 
   return {
@@ -165,6 +192,7 @@ async function loadFiche(id: string) {
     partenariats: (partRes.data ?? []) as Partenariat[],
     evenements: (evtRes.data ?? []) as Evenement[],
     programme: (psRes.data ?? null) as Programme | null,
+    representations: ((repexRes as { data: unknown[] | null }).data ?? []) as Representation[],
   }
 }
 
@@ -212,7 +240,7 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
   const data = await loadFiche(id)
   if (!data) notFound()
 
-  const { projet, indicateurs, temoignages, pays, partenariats, evenements, programme } = data
+  const { projet, indicateurs, temoignages, pays, partenariats, evenements, programme, representations } = data
   const accent =
     programme?.couleur_theme ??
     PS_FALLBACK_COLOR[projet.ps_id ?? 'PS1'] ??
@@ -423,7 +451,7 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
                     <div>
                       <p className="text-xs text-gray-400 uppercase tracking-wider">Rayonnement</p>
                       <p className="font-editorial text-3xl font-bold mt-0.5" style={{ color: accent }}>
-                        {projet.nombre_pays} pays
+                        <AnimatedCounter value={projet.nombre_pays!} suffix=" pays" />
                       </p>
                     </div>
                   </div>
@@ -446,7 +474,7 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
                     <div>
                       <p className="text-xs text-gray-400 uppercase tracking-wider">Initiatives retenues en {projet.annee_exercice}</p>
                       <p className="font-editorial text-3xl font-bold mt-0.5" style={{ color: accent }}>
-                        {formatNombre(projet.nombre_projets_retenus)}
+                        <AnimatedCounter value={projet.nombre_projets_retenus!} />
                       </p>
                     </div>
                   </div>
@@ -479,6 +507,72 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
                 </div>
               )}
 
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ─── Réalisations clés ─────────────────────────────────────────────── */}
+      {projet.cercles_impact && Object.keys(projet.cercles_impact).length > 0 && (
+        <section className="py-14" style={{ background: `linear-gradient(135deg, var(--oif-blue-dark) 0%, ${accent}CC 100%)` }}>
+          <div className="max-w-7xl mx-auto px-6">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="flex-1 h-px opacity-30" style={{ background: 'white' }} />
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">
+                Réalisations clés du projet
+              </p>
+              <div className="flex-1 h-px opacity-30" style={{ background: 'white' }} />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Coeur — investissement */}
+              {projet.cercles_impact.coeur && (
+                <RealisationCard
+                  icon="💰"
+                  valeur={projet.cercles_impact.coeur.valeur ?? (projet.engagement_global ? `${(projet.engagement_global / 1_000_000).toFixed(1)} M€` : null)}
+                  label="Investissement OIF"
+                  preuve="Comptabilité vérifiée"
+                  accent={accent}
+                />
+              )}
+              {/* N1 — bénéficiaires directes */}
+              {projet.cercles_impact.niveau1 && (
+                <RealisationCard
+                  icon="👩"
+                  valeur={projet.cercles_impact.niveau1.valeur ?? null}
+                  label={projet.cercles_impact.niveau1.label ?? 'Bénéficiaires directes'}
+                  preuve={projet.cercles_impact.niveau1.type_preuve ?? 'Mesuré'}
+                  accent="#D4A017"
+                />
+              )}
+              {/* N2 — familles */}
+              {projet.cercles_impact.niveau2 && (
+                <RealisationCard
+                  icon="🏘️"
+                  valeur={projet.cercles_impact.niveau2.valeur ?? null}
+                  label={projet.cercles_impact.niveau2.label ?? 'Familles touchées'}
+                  preuve={projet.cercles_impact.niveau2.type_preuve ?? 'Estimé'}
+                  accent="#D4A017"
+                />
+              )}
+              {/* Taux exécution ou N3 */}
+              {projet.taux_execution != null ? (
+                <RealisationCard
+                  icon="📈"
+                  valeur={`${projet.taux_execution} %`}
+                  label="Taux d'exécution budgétaire"
+                  preuve="Comptabilité OIF"
+                  accent={accent}
+                />
+              ) : projet.cercles_impact.niveau3 ? (
+                <RealisationCard
+                  icon="🌍"
+                  valeur={projet.cercles_impact.niveau3.valeur ?? null}
+                  label={projet.cercles_impact.niveau3.label ?? 'Communautés mobilisées'}
+                  preuve={projet.cercles_impact.niveau3.type_preuve ?? 'Observé'}
+                  accent={accent}
+                />
+              ) : null}
             </div>
           </div>
         </section>
@@ -751,6 +845,110 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
         </section>
       )}
 
+      {/* ─── REPEX — Représentations OIF ──────────────────────────────────── */}
+      {representations.length > 0 && (
+        <section className="py-16 bg-white border-t border-gray-100">
+          <div className="max-w-7xl mx-auto px-6">
+            {/* En-tête */}
+            <div className="flex items-end justify-between gap-6 mb-10">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="inline-block w-6 h-0.5 rounded-full" style={{ backgroundColor: '#D4A017' }} />
+                  <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D4A017' }}>
+                    REPEX
+                  </p>
+                </div>
+                <h2 className="font-editorial text-3xl md:text-4xl font-semibold text-[var(--oif-blue-dark)]">
+                  Représentations de l&apos;Organisation
+                </h2>
+                <p className="mt-2 text-sm text-gray-500 max-w-xl">
+                  Bureaux régionaux et délégations permanentes de l&apos;OIF impliqués dans le déploiement de ce projet.
+                </p>
+              </div>
+              <div className="hidden md:flex items-center gap-2 flex-shrink-0 text-xs text-gray-400 border border-gray-100 rounded-xl px-4 py-3 bg-gray-50">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D4A017" strokeWidth="2">
+                  <path strokeLinecap="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3" />
+                </svg>
+                {representations.length} représentation{representations.length > 1 ? 's' : ''} active{representations.length > 1 ? 's' : ''}
+              </div>
+            </div>
+
+            {/* Grille des représentations */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {representations.map((rep) => (
+                <div key={rep.id}
+                  className="group relative rounded-2xl border bg-white p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden"
+                  style={{ borderColor: rep.mise_en_avant ? '#D4A01733' : '#E5E7EB' }}>
+                  {/* Accent top si mise en avant */}
+                  {rep.mise_en_avant && (
+                    <div className="absolute top-0 left-0 right-0 h-0.5" style={{ backgroundColor: '#D4A017' }} />
+                  )}
+
+                  {/* Header */}
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: '#D4A01718' }}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4A017" strokeWidth="1.8">
+                        <path strokeLinecap="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm text-[var(--oif-blue-dark)] leading-snug">
+                        {rep.nom}
+                      </h3>
+                      {rep.acronyme && (
+                        <span className="inline-block mt-1 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded"
+                          style={{ backgroundColor: '#D4A01720', color: '#D4A017' }}>
+                          {rep.acronyme}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Localisation */}
+                  {(rep.ville || rep.region) && (
+                    <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-3">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <path strokeLinecap="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z"/>
+                      </svg>
+                      {[rep.ville, rep.region].filter(Boolean).join(', ')}
+                    </div>
+                  )}
+
+                  {/* Rôle dans le projet */}
+                  {rep.role_dans_projet && (
+                    <p className="text-xs font-semibold text-[var(--oif-blue-dark)] mb-2 flex items-start gap-1.5">
+                      <span className="mt-0.5 flex-shrink-0 w-3.5 h-3.5 rounded-full inline-flex items-center justify-center"
+                        style={{ backgroundColor: '#D4A01720' }}>
+                        <svg width="8" height="8" viewBox="0 0 24 24" fill="#D4A017" stroke="none">
+                          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                        </svg>
+                      </span>
+                      {rep.role_dans_projet}
+                    </p>
+                  )}
+
+                  {/* Description */}
+                  {rep.description && (
+                    <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">
+                      {rep.description}
+                    </p>
+                  )}
+
+                  {/* Badge type */}
+                  <div className="mt-4 pt-3 border-t border-gray-50">
+                    <span className="text-[10px] uppercase tracking-wider text-gray-300 font-medium">
+                      {(rep.type ?? 'représentation').replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ─── Événements marquants ─────────────────────────────────────────── */}
       {evenements.length > 0 && (
         <section className="bg-[var(--oif-cream)] py-16">
@@ -785,6 +983,26 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
 }
 
 // ─── Sous-composants ──────────────────────────────────────────────────────────
+
+// Carte réalisation clé (section "Réalisations clés" sur fond sombre)
+function RealisationCard({ icon, valeur, label, preuve, accent }: {
+  icon: string; valeur: string | null; label: string; preuve: string; accent: string
+}) {
+  if (!valeur) return null
+  return (
+    <div className="flex flex-col items-center text-center p-6 rounded-2xl transition-all duration-300 hover:scale-[1.03]"
+      style={{ backgroundColor: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)' }}>
+      <div className="text-3xl mb-3" aria-hidden="true">{icon}</div>
+      <p className="font-editorial text-3xl font-bold text-white mb-1 leading-tight">{valeur}</p>
+      <p className="text-sm text-white/80 mb-2">{label}</p>
+      <span className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full text-white/50"
+        style={{ backgroundColor: accent + '33', border: '1px solid ' + accent + '44' }}>
+        {preuve}
+      </span>
+    </div>
+  )
+}
+
 function ChiffreHero({ value, label, sub, accent, highlight = false }: {
   value: string; label: string; sub?: string; accent: string; highlight?: boolean
 }) {
@@ -820,10 +1038,26 @@ function IndicateurCard({ ind, accent }: { ind: Indicateur; accent: string }) {
 
         <div className="relative z-10">
           <div className="flex items-start justify-between gap-3 mb-3">
-            {/* Valeur principale */}
+            {/* Valeur principale avec compteur animé */}
             <span className="font-editorial leading-none font-bold"
               style={{ fontSize: 'clamp(2rem,5vw,3.5rem)', color: accent }}>
-              {formatIndicValeur(ind)}
+              {ind.valeur_pourcentage != null ? (
+                <AnimatedCounter
+                  value={ind.valeur_pourcentage}
+                  suffix={ind.unite ?? ' %'}
+                  decimals={ind.valeur_pourcentage % 1 !== 0 ? 1 : 0}
+                  duration={1800}
+                />
+              ) : ind.valeur_numerique != null ? (
+                <AnimatedCounter
+                  value={ind.valeur_numerique}
+                  suffix={ind.unite ? ` ${ind.unite}` : ''}
+                  decimals={0}
+                  duration={1600}
+                />
+              ) : (
+                formatIndicValeur(ind)
+              )}
             </span>
             {/* Badge type de preuve */}
             {ind.type_preuve && <BadgePreuve type={ind.type_preuve} taille="sm" />}
