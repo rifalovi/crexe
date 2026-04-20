@@ -34,7 +34,7 @@ Les utilisateurs cibles sont : décideurs OIF, États membres, bailleurs de fond
 
 | Couche | Choix | Raison |
 |---|---|---|
-| Framework | Next.js 15 (App Router) + TypeScript | SEO, SSR, performance, typage fort |
+| Framework | Next.js 16.2.4 (App Router, Turbopack) + TypeScript | SEO, SSR, performance, typage fort |
 | Style | Tailwind CSS + shadcn/ui | Design system ouvert, accessible, modifiable |
 | Base de données | Supabase (PostgreSQL) | Postgres + pgvector + auth + storage intégrés |
 | Embeddings | Voyage AI `voyage-3` ou OpenAI `text-embedding-3-small` | Qualité multilingue FR |
@@ -48,14 +48,19 @@ Les utilisateurs cibles sont : décideurs OIF, États membres, bailleurs de fond
 
 ## 4. Palette et identité visuelle
 
-Couleurs signature (à déclarer en variables CSS dans `globals.css`) :
+Couleurs signature (déclarées en variables CSS dans `app/globals.css`) :
 
-- `--oif-blue: #003DA5` — institutionnel, chiffres factuels
-- `--oif-blue-dark: #042C53` — texte sur fond clair
-- `--oif-purple: #6B2C91` — transformation humaine, résultats qualitatifs
+- `--oif-blue: #003DA5` — institutionnel, chiffres factuels (couleur PS1)
+- `--oif-blue-dark: #042C53` — texte sur fond clair, fond du hero
+- `--oif-purple: #6B2C91` — couleur PS2 (démocratie et gouvernance)
+- `--oif-green: #0F6E56` — couleur PS3 (développement durable)
 - `--oif-gold: #D4A017` — chiffres-chocs, accents
 - `--oif-cream: #FAF7F0` — fond doux pour les sections éditoriales
 - `--oif-neutral: #F0F4FA` — surfaces secondaires
+
+Les trois programmes stratégiques (voir §6) utilisent une couleur signature chacun :
+PS1 = `--oif-blue`, PS2 = `--oif-purple`, PS3 = `--oif-green`. Le champ `couleur_theme`
+de `programmes_strategiques` stocke la valeur officielle et prime sur ces variables.
 
 Typographie : `Inter` (UI) + `Source Serif 4` (titres éditoriaux, citations). Jamais plus de deux familles de polices simultanément.
 
@@ -102,18 +107,46 @@ Typographie : `Inter` (UI) + `Source Serif 4` (titres éditoriaux, citations). J
 
 ---
 
-## 6. Modèle de données (schéma Postgres)
+## 6. Modèle de données (schéma Postgres v3)
 
-Les 6 tables principales, toutes en français pour faciliter la maintenance par l'équipe OIF :
+Schéma complet dans `files/schema_v3.sql`, migration applicable via `docs/migration_v3_delta.sql`.
 
-- `programmes_strategiques` — les PS de l'OIF (ex. PS1 Langue française, PS2 Éducation…)
-- `projets` — les projets (P14, P15, P16…) rattachés à un PS
-- `indicateurs` — KPIs chiffrés d'un projet (avec `type_preuve`, `source`, `annee`)
-- `temoignages` — citations sourcées (avec `url_source`, `type_media`)
-- `pays_couverture` — table pivot pays × projet
-- `documents_rag` — chunks vectorisés du CREXE pour le RAG (avec `embedding vector(1536)`)
+### Programmes stratégiques — 3 PS officiels
+- `PS1` — *La langue française au service des cultures et de l'éducation* → `#003DA5` (bleu)
+- `PS2` — *La langue française au service de la démocratie et de la gouvernance* → `#6B2C91` (violet)
+- `PS3` — *La langue française, vecteur de développement durable* → `#0F6E56` (vert)
 
-Voir `/docs/schema.sql` pour le DDL complet.
+### Nomenclature des projets — CRITIQUE ⚠️
+Codes officiels : `PROJ_A01`, `PROJ_A01a`, `PROJ_A14`, `PROJ_A16b`, etc.
+**Jamais** `P14`, `P15` — cette nomenclature est obsolète. Les 22 projets
+(y compris sous-projets via `projet_parent_id` / `est_sous_projet`) sont seedés
+en statut `brouillon` dans le schéma v3.
+
+### Workflow de publication
+`projets.statut` ∈ { `brouillon`, `en_revue`, `publie`, `archive` }.
+Les politiques RLS ouvrent la lecture publique **uniquement** sur les projets
+en statut `publie` — idem pour `indicateurs`, `temoignages`, `pays_couverture`,
+`documents_rag`.
+
+### Tables principales
+- `programmes_strategiques` — PS1/PS2/PS3 avec `couleur_theme`
+- `projets` — code `PROJ_A*`, `cercles_impact` (JSONB), `statut`
+- `indicateurs` — KPIs avec `type_preuve` (mesure/estimation/observation/institutionnel)
+- `temoignages` — citations sourcées (`source_url`, `type_media`)
+- `pays` + `pays_couverture` — table pivot pays × projet
+- `partenariats`, `evenements`, `medias` — contenu éditorial complémentaire
+- `documents_rag` — chunks vectorisés `embedding vector(1536)` pour le chatbot
+
+### Tables d'authentification et d'audit
+- `profils` — extension de `auth.users` avec `role` (admin / editeur / lecteur),
+  **remplace** l'ancienne table `user_profiles`
+- `assignations_editeur` — relation N-N éditeur ↔ projet
+- `invitations_editeur` — workflow d'invitation pré-inscription
+- `journal_audit` — traçabilité de toutes les mutations
+- `rate_limit_chatbot` — quotas chatbot anonyme / authentifié
+
+Fonctions clés : `get_my_role()`, `is_admin()`, `can_edit_projet()`, `match_documents()`.
+Vues publiques : `v_stats_publiques`, `v_projets_publics`.
 
 ---
 

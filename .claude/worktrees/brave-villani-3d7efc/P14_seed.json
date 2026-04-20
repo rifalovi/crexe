@@ -1,0 +1,297 @@
+{
+  "projet": {
+    "id": "P14",
+    "ps_id": "PS3",
+    "nom": "La Francophonie avec Elles",
+    "accroche": "D'une femme à toute une société",
+    "description": "Le Fonds 'La Francophonie avec Elles' constitue un dispositif visant à soutenir des initiatives concrètes de terrain portées par la société civile, afin de favoriser l'autonomisation économique et sociale des femmes vulnérables francophones, notamment à travers l'accès à la formation, à l'emploi et le développement d'activités génératrices de revenus.",
+    "annee_exercice": 2025,
+    "budget_modifie": 2915200,
+    "budget_engage": 2872348,
+    "engagement_global": 4345000,
+    "taux_execution": 99,
+    "nombre_pays": 31,
+    "nombre_projets_deposes": 1561,
+    "nombre_projets_retenus": 54,
+    "thematiques": ["egalite_femmes_hommes", "entrepreneuriat", "autonomisation_economique", "droits_humains", "societe_civile"],
+    "mots_cles": ["AGR", "formation", "coopératives", "insertion économique", "droits", "Kigali"],
+    "cercles_impact": {
+      "coeur": {
+        "valeur": "4,3 M€",
+        "label": "Investissement"
+      },
+      "niveau1": {
+        "valeur": "9 475 femmes",
+        "label": "Bénéficiaires directes",
+        "description": "Revenus multipliés par 3",
+        "type_preuve": "mesure"
+      },
+      "niveau2": {
+        "valeur": "≈ 47 000 personnes",
+        "label": "Familles transformées",
+        "description": "Scolarisation, santé, alimentation",
+        "type_preuve": "estimation",
+        "hypothese": "5 personnes par foyer en moyenne"
+      },
+      "niveau3": {
+        "label": "Communautés mobilisées",
+        "description": "Collectivités, coopératives, réduction documentée des violences",
+        "type_preuve": "observation"
+      },
+      "niveau4": {
+        "label": "Espace francophone",
+        "description": "Appel de Kigali, ODD 5, 31 pays engagés",
+        "type_preuve": "institutionnel"
+      }
+    }
+  },
+  "pays_couverture": [
+    "ARM", "BEN", "BGR", "BFA", "BDI", "CPV", "CMR", "COM", "COG", "CIV",
+    "DJI", "EGY", "GHA", "GIN", "GNB", "HTI", "LBN", "MDG", "MLI", "MAR",
+    "MUS", "MRT", "MDA", "NER", "COD", "RWA", "STP", "SEN", "TCD", "TGO", "TUN"
+  ],
+  "indicateurs": [
+    {
+      "libelle": "Femmes ayant obtenu un accès direct à une activité génératrice de revenus (AGR)",
+      "valeur_numerique": 9475,
+      "unite": "femmes",
+      "categorie": "insertion_economique",
+      "type_preuve": "mesure",
+      "source": "Rapport P14 OIF 2025",
+      "mise_en_avant": true,
+      "ordre": 1
+    },
+    {
+      "libelle": "Femmes ayant vu leurs capacités renforcées en droits et égalité",
+      "valeur_numerique": 9290,
+      "unite": "femmes",
+      "categorie": "renforcement_capacites",
+      "type_preuve": "mesure",
+      "source": "Rapport P14 OIF 2025",
+      "mise_en_avant": true,
+      "ordre": 2
+    },
+    {
+      "libelle": "Actions de renforcement des capacités réalisées",
+      "valeur_numerique": 1264,
+      "unite": "actions",
+      "categorie": "activites",
+      "type_preuve": "mesure",
+      "source": "Rapport P14 OIF 2025",
+      "mise_en_avant": true,
+      "ordre": 3
+    },
+    {
+      "libelle": "Bénéficiaires satisfaites ou très satisfaites",
+      "valeur_pourcentage": 87.4,
+      "unite": "%",
+      "categorie": "satisfaction",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "mise_en_avant": true,
+      "ordre": 4
+    },
+    {
+      "libelle": "Bénéficiaires disposant d'un acte d'état civil",
+      "valeur_pourcentage": 86.9,
+      "unite": "%",
+      "categorie": "droits",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "mise_en_avant": true,
+      "ordre": 5
+    },
+    {
+      "libelle": "Bénéficiaires ayant créé une activité professionnelle",
+      "valeur_pourcentage": 65.8,
+      "unite": "%",
+      "categorie": "insertion_economique",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "mise_en_avant": true,
+      "ordre": 6
+    },
+    {
+      "libelle": "Jeunes femmes (18-34 ans) parmi les répondantes",
+      "valeur_pourcentage": 65.8,
+      "unite": "%",
+      "categorie": "demographie",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "ordre": 7
+    },
+    {
+      "libelle": "Compétences acquises en gestion d'AGR",
+      "valeur_pourcentage": 59.8,
+      "unite": "%",
+      "categorie": "renforcement_capacites",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "ordre": 8
+    },
+    {
+      "libelle": "Bénéficiaires ayant amélioré leurs compétences",
+      "valeur_pourcentage": 58.6,
+      "unite": "%",
+      "categorie": "renforcement_capacites",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "ordre": 9
+    },
+    {
+      "libelle": "Maîtrise de l'utilisation des réseaux sociaux",
+      "valeur_pourcentage": 53.3,
+      "unite": "%",
+      "categorie": "competences_numeriques",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "ordre": 10
+    },
+    {
+      "libelle": "Compétences développées en gestion financière",
+      "valeur_pourcentage": 51.9,
+      "unite": "%",
+      "categorie": "renforcement_capacites",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "ordre": 11
+    },
+    {
+      "libelle": "Meilleure organisation des activités",
+      "valeur_pourcentage": 49.9,
+      "unite": "%",
+      "categorie": "structuration",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "ordre": 12
+    },
+    {
+      "libelle": "Compétences acquises en commercialisation digitale",
+      "valeur_pourcentage": 47.4,
+      "unite": "%",
+      "categorie": "commercialisation",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "ordre": 13
+    },
+    {
+      "libelle": "Bénéficiaires devenues autonomes économiquement",
+      "valeur_pourcentage": 45.6,
+      "unite": "%",
+      "categorie": "autonomie",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "ordre": 14
+    },
+    {
+      "libelle": "Augmentation des revenus déclarée",
+      "valeur_pourcentage": 44.3,
+      "unite": "%",
+      "categorie": "effet_revenus",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "ordre": 15
+    },
+    {
+      "libelle": "Formation dans le domaine des TIC",
+      "valeur_pourcentage": 34.5,
+      "unite": "%",
+      "categorie": "competences_avenir",
+      "type_preuve": "mesure",
+      "source": "Enquête de satisfaction bénéficiaires 2025",
+      "ordre": 16
+    },
+    {
+      "libelle": "Familles transformées (bénéficiaires étendues)",
+      "valeur_numerique": 47000,
+      "unite": "personnes",
+      "categorie": "rayonnement",
+      "type_preuve": "estimation",
+      "hypothese_calcul": "9475 bénéficiaires × 5 personnes par foyer (moyenne des pays d'intervention)",
+      "source": "Estimation CREXE",
+      "ordre": 17
+    },
+    {
+      "libelle": "Multiplication moyenne des revenus des bénéficiaires",
+      "valeur_numerique": 3,
+      "unite": "x",
+      "categorie": "effet_revenus",
+      "type_preuve": "mesure",
+      "source": "Rapport P14 OIF 2025",
+      "mise_en_avant": true,
+      "ordre": 18
+    }
+  ],
+  "temoignages": [
+    {
+      "citation": "À Madagascar, la mécanique automobile était une activité encore réservée aux hommes. Aujourd'hui, des femmes formées et équipées par le Fonds exercent ce métier et forment à leur tour d'autres femmes.",
+      "source": "Reportage RFI Afrique, 8 mars 2025",
+      "source_url": "https://www.rfi.fr/fr/afrique/20250308-madagascar-la-mécanique-automobile-une-activité-encore-réservée-aux-hommes-et-pourtant",
+      "type_media": "article",
+      "pays": "MDG",
+      "mise_en_avant": true
+    },
+    {
+      "citation": "Au Rwanda, des collectivités territoriales mettent désormais des terres cultivables à disposition des coopératives de femmes bénéficiaires, illustrant un ancrage institutionnel durable des initiatives.",
+      "source": "Rapport de mission OIF au Bénin, 30 novembre — 5 décembre 2025",
+      "type_media": "rapport",
+      "pays": "RWA",
+      "mise_en_avant": true
+    },
+    {
+      "citation": "Les revenus des femmes accompagnées ont été, en moyenne, multipliés par trois. Elles gagnent en autonomie dans la gestion de leurs finances, de leurs activités et de leurs choix de vie.",
+      "source": "Synthèse de l'enquête de satisfaction bénéficiaires 2025",
+      "type_media": "rapport",
+      "mise_en_avant": true
+    },
+    {
+      "citation": "Reportage vidéo — parcours de bénéficiaires du Fonds La Francophonie avec Elles.",
+      "source": "Chaîne YouTube OIF",
+      "source_url": "https://www.youtube.com/watch?v=bTnxE9-4XvU",
+      "type_media": "video"
+    },
+    {
+      "citation": "Reportage vidéo — témoignages de femmes autonomisées par le Fonds.",
+      "source": "Chaîne YouTube OIF",
+      "source_url": "https://www.youtube.com/watch?v=g2fuGPv9sNI",
+      "type_media": "video"
+    }
+  ],
+  "partenariats": [
+    {
+      "nom": "Développement international Desjardins (DID)",
+      "type": "technique",
+      "description": "Accompagnement du renforcement du dispositif et développement de la culture de l'épargne chez les bénéficiaires."
+    },
+    {
+      "nom": "ONU Femmes Haïti",
+      "type": "institutionnel",
+      "description": "Complémentarité opérationnelle et institutionnelle en contexte de crise."
+    }
+  ],
+  "activites_structurantes": [
+    { "libelle": "Actions de suivi-évaluation", "valeur": 176 },
+    { "libelle": "Actions de communication et visibilité", "valeur": 135 },
+    { "libelle": "Impressions digitales", "valeur": 1400000 },
+    { "libelle": "Personnes touchées digitalement", "valeur": 734788 },
+    { "libelle": "Taux d'engagement digital moyen", "valeur": 4.53, "unite": "%" },
+    { "libelle": "Activités de plaidoyer de haut niveau", "valeur": 2 }
+  ],
+  "evenements_marquants": [
+    {
+      "date": "2025-06-17",
+      "titre": "6ᵉ Mission économique de la Francophonie au Bénin",
+      "description": "7 femmes bénéficiaires du Fonds ont pris part à la Mission économique : Coopérative Villageoise des Transformatrices de Soja, Coopérative Gbèwèsso, EFOI (Maurice, Seychelles), Fondation Mablé (Togo), KOAM Cosmetics (Bénin)."
+    },
+    {
+      "date": "2025-11-01",
+      "titre": "Conférence ministérielle de la Francophonie — Kigali",
+      "description": "Livret sur les 30 ans d'engagements de la Francophonie en matière d'égalité femmes-hommes. Contribution active à l'Appel de Kigali."
+    },
+    {
+      "date": "2025-12-05",
+      "titre": "Mission au Bénin de l'Administratrice de l'OIF",
+      "description": "Mission conduite par Mme Caroline St-Hilaire avec 11 femmes du secteur privé de 6 pays francophones : conclusion de deux partenariats techniques."
+    }
+  ]
+}

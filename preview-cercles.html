@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aperçu — Cercles d'impact CREXE</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #FAF7F0; padding: 2rem; color: #042C53; }
+
+  .section-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    padding: 2.5rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  }
+
+  /* En-tete section */
+  .section-header {
+    background: #003da5;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 1.5rem;
+  }
+  .section-header .surtitle {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.75);
+  }
+  .section-header .title {
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    margin-top: 2px;
+  }
+
+  /* Grid 2 colonnes */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  /* SVG wrapper */
+  .svg-wrap {
+    max-width: 280px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .svg-wrap svg { width: 100%; height: auto; }
+
+  /* Mini légende sous SVG */
+  .mini-legend {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .mini-legend span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #666;
+  }
+  .mini-legend .dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  /* Items de légende */
+  .legend-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .legend-item {
+    display: flex;
+    gap: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid transparent;
+  }
+
+  .legend-item .band {
+    flex-shrink: 0;
+    width: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    gap: 4px;
+  }
+  .legend-item .band .num {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: white;
+  }
+  .legend-item .band .lbl {
+    font-size: 8px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+  }
+
+  .legend-item .content {
+    flex: 1;
+    padding: 10px 12px 10px 10px;
+  }
+  .legend-item .indice {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.55;
+    margin-bottom: 2px;
+  }
+  .legend-item .badge {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 99px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .legend-item .valeur {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+  .legend-item .label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #042C53;
+    line-height: 1.3;
+  }
+  .legend-item .desc {
+    font-size: 11px;
+    color: #888;
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+  .legend-item .hyp {
+    font-size: 10px;
+    color: #aaa;
+    font-style: italic;
+    margin-top: 6px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border-left: 2px solid;
+  }
+
+  /* Palettes */
+  .coeur   { background: #fffbf0; border-color: rgba(212,160,23,0.25); }
+  .coeur   .band { background: rgba(212,160,23,0.15); color: #92620A; }
+  .coeur   .num  { background: #D4A017; }
+  .coeur   .indice { color: #92620A; }
+  .coeur   .valeur { color: #D4A017; }
+
+  .n1      { background: #f3edf7; border-color: rgba(107,44,145,0.2); }
+  .n1      .band { background: rgba(107,44,145,0.12); color: #6b2c91; }
+  .n1      .num  { background: #6b2c91; }
+  .n1      .indice { color: #6b2c91; }
+  .n1      .valeur { color: #6b2c91; }
+
+  .n2, .n3, .n4 { background: #f0f4fa; border-color: rgba(0,61,165,0.15); }
+  .n2 .band, .n3 .band, .n4 .band { background: rgba(0,61,165,0.1); color: #003da5; }
+  .n2 .num  { background: #003da5; }
+  .n3 .num  { background: rgba(0,61,165,0.6); }
+  .n4 .num  { background: rgba(0,61,165,0.35); color: white; }
+  .n2 .indice, .n3 .indice, .n4 .indice { color: #003da5; }
+  .n2 .valeur, .n3 .valeur, .n4 .valeur { color: #003da5; }
+
+  /* Badges preuve */
+  .badge-mesure       { background: #dcfce7; color: #166534; }
+  .badge-estimation   { background: #fef9c3; color: #854d0e; }
+  .badge-observation  { background: #dbeafe; color: #1e40af; }
+  .badge-institutionnel { background: #ede9fe; color: #5b21b6; }
+</style>
+</head>
+<body>
+
+<div class="section-wrap">
+
+  <!-- Titre de page -->
+  <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#0F6E56;opacity:.8;margin-bottom:4px;">Portée de l'impact</p>
+  <h2 style="font-family:'Source Serif 4',Georgia,serif;font-size:28px;font-weight:700;color:#042C53;margin-bottom:1.5rem;">Les cercles d'impact</h2>
+
+  <div class="section-header">
+    <p class="surtitle">Chaîne d'impact</p>
+    <p class="title">Du cœur du projet à l'espace francophone</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- SVG -->
+    <div class="svg-wrap">
+      <svg viewBox="0 0 240 240" role="img" aria-label="Cercles d'impact">
+
+        <!-- Halo pointillé -->
+        <circle cx="120" cy="120" r="115" fill="none" stroke="rgba(0,61,165,0.07)" stroke-width="1.5" stroke-dasharray="4 3"/>
+
+        <!-- Anneau N4 bleu très clair -->
+        <circle cx="120" cy="120" r="108" fill="rgba(0,61,165,0.06)" stroke="rgba(0,61,165,0.2)" stroke-width="0.8"/>
+
+        <!-- Anneau N3 bleu clair -->
+        <circle cx="120" cy="120" r="85" fill="rgba(0,61,165,0.1)" stroke="rgba(0,61,165,0.28)" stroke-width="0.8"/>
+
+        <!-- Anneau N2 violet très clair -->
+        <circle cx="120" cy="120" r="62" fill="rgba(107,44,145,0.1)" stroke="rgba(107,44,145,0.35)" stroke-width="0.8"/>
+
+        <!-- Anneau N1 violet clair -->
+        <circle cx="120" cy="120" r="40" fill="rgba(107,44,145,0.2)" stroke="rgba(107,44,145,0.5)" stroke-width="1"/>
+
+        <!-- Cœur or -->
+        <circle cx="120" cy="120" r="22" fill="#D4A017" stroke="#92620A" stroke-width="1.5"/>
+
+        <!-- Numéros dans les anneaux -->
+        <text x="120" y="24" text-anchor="middle" dominant-baseline="central" fill="rgba(0,61,165,0.45)" font-size="13" font-weight="700" font-family="Arial, sans-serif">4</text>
+        <text x="120" y="193" text-anchor="middle" dominant-baseline="central" fill="rgba(0,61,165,0.5)" font-size="13" font-weight="700" font-family="Arial, sans-serif">3</text>
+        <text x="69" y="120" text-anchor="middle" dominant-baseline="central" fill="rgba(107,44,145,0.65)" font-size="13" font-weight="700" font-family="Arial, sans-serif">2</text>
+        <text x="151" y="120" text-anchor="middle" dominant-baseline="central" fill="rgba(107,44,145,0.8)" font-size="13" font-weight="700" font-family="Arial, sans-serif">1</text>
+
+        <!-- Cœur valeur -->
+        <text x="120" y="117" text-anchor="middle" dominant-baseline="central" fill="white" font-size="9.5" font-weight="800" font-family="Arial, sans-serif">4,3 M€</text>
+        <text x="120" y="129" text-anchor="middle" dominant-baseline="central" fill="rgba(255,255,255,0.8)" font-size="4.8" font-family="Arial, sans-serif">Investissement</text>
+      </svg>
+
+      <!-- Mini légende -->
+      <div class="mini-legend">
+        <span><span class="dot" style="background:#D4A017;color:white">C</span> Cœur</span>
+        <span><span class="dot" style="background:#6b2c91;color:white">1</span> N1</span>
+        <span><span class="dot" style="background:#003da5;color:white">2</span> N2</span>
+        <span><span class="dot" style="background:rgba(0,61,165,0.25);color:#003da5">3</span> N3</span>
+        <span><span class="dot" style="background:rgba(0,61,165,0.12);color:#003da5;border:1px solid rgba(0,61,165,0.3)">4</span> N4</span>
+      </div>
+    </div>
+
+    <!-- Légende -->
+    <div class="legend-list">
+
+      <!-- Cœur -->
+      <div class="legend-item coeur">
+        <div class="band">
+          <div class="num">C</div>
+          <span class="lbl" style="color:#92620A">Cœur</span>
+        </div>
+        <div class="content">
+          <div class="indice">Cœur</div>
+          <div class="valeur">4,3 M€</div>
+          <div class="label">Investissement</div>
+        </div>
+      </div>
+
+      <!-- N1 -->
+      <div class="legend-item n1">
+        <div class="band">
+          <div class="num">1</div>
+          <span class="lbl" style="color:#6b2c91">N1</span>
+        </div>
+        <div class="content">
+          <div class="indice">Niveau 1 <span class="badge badge-mesure">● Mesuré</span></div>
+          <div class="valeur">9 475 femmes</div>
+          <div class="label">Bénéficiaires directes</div>
+          <div class="desc">Revenus multipliés par 3</div>
+        </div>
+      </div>
+
+      <!-- N2 -->
+      <div class="legend-item n2">
+        <div class="band">
+          <div class="num">2</div>
+          <span class="lbl" style="color:#003da5">N2</span>
+        </div>
+        <div class="content">
+          <div class="indice">Niveau 2 <span class="badge badge-estimation">● Estimé</span></div>
+          <div class="valeur">≈ 47 000 personnes</div>
+          <div class="label">Familles transformées</div>
+          <div class="desc">Scolarisation, santé, alimentation</div>
+          <div class="hyp" style="border-color:rgba(0,61,165,0.4);background:rgba(0,61,165,0.06)">Hyp. : 5 personnes par foyer en moyenne</div>
+        </div>
+      </div>
+
+      <!-- N3 -->
+      <div class="legend-item n3">
+        <div class="band">
+          <div class="num" style="background:rgba(0,61,165,0.55)">3</div>
+          <span class="lbl" style="color:#003da5">N3</span>
+        </div>
+        <div class="content">
+          <div class="indice">Niveau 3 <span class="badge badge-observation">● Observé</span></div>
+          <div class="label" style="margin-top:4px">Communautés mobilisées</div>
+          <div class="desc">Collectivités, coopératives, réduction documentée des violences</div>
+        </div>
+      </div>
+
+      <!-- N4 -->
+      <div class="legend-item n4">
+        <div class="band">
+          <div class="num" style="background:rgba(0,61,165,0.3)">4</div>
+          <span class="lbl" style="color:#003da5">N4</span>
+        </div>
+        <div class="content">
+          <div class="indice">Niveau 4 <span class="badge badge-institutionnel">● Institutionnel</span></div>
+          <div class="label" style="margin-top:4px">Espace francophone</div>
+          <div class="desc">Appel de Kigali, ODD 5, 31 pays engagés</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

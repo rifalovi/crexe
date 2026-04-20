@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aperçu — Fiche projet CREXE · PROJ_A14</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --blue-dark: #042C53;
+  --blue: #003DA5;
+  --purple: #6B2C91;
+  --green: #0F6E56;
+  --gold: #D4A017;
+  --cream: #FAF7F0;
+  --neutral: #F0F4FA;
+  --accent: #6B2C91;
+}
+body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: var(--blue-dark); }
+.font-editorial { font-family: 'Source Serif 4', Georgia, serif; }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(140deg, var(--blue-dark) 0%, var(--accent) 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+.hero::after {
+  content: '';
+  position: absolute;
+  right: -120px;
+  bottom: -120px;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+}
+.hero-inner {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 2rem 0;
+}
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+.breadcrumb a { color: rgba(255,255,255,0.5); font-size: 12px; text-decoration: none; }
+.btn-download {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: white;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  text-decoration: none;
+  cursor: pointer;
+}
+.hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; align-items: center; }
+.badge-ps {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.18);
+  color: white;
+}
+.badge-code {
+  font-size: 10px;
+  font-family: monospace;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.65);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+.badge-year { font-size: 10px; color: rgba(255,255,255,0.4); font-weight: 500; }
+.hero h1 {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(28px, 5vw, 52px);
+  font-weight: 600;
+  line-height: 1.15;
+  margin-bottom: 12px;
+  max-width: 720px;
+}
+.hero-accroche {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-style: italic;
+  font-size: 19px;
+  color: rgba(255,255,255,0.75);
+  max-width: 600px;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+/* Barre progression */
+.progress-wrap { max-width: 360px; margin-bottom: 2rem; }
+.progress-labels { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.progress-labels span:first-child { font-size: 11px; color: rgba(255,255,255,0.55); }
+.progress-labels span:last-child { font-size: 13px; font-weight: 700; color: white; }
+.progress-bar-bg { height: 8px; border-radius: 99px; background: rgba(255,255,255,0.15); overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 99px; background: #22c55e; width: 99%; }
+
+/* KPIs grid */
+.kpis-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 0;
+}
+@media(max-width:768px){ .kpis-grid { grid-template-columns: repeat(2,1fr); } }
+.kpi-card {
+  border-radius: 12px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card.highlight { background: var(--accent); }
+.kpi-card.regular {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.kpi-card.regular::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: rgba(255,255,255,0.35);
+}
+.kpi-value {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 600;
+  color: white;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.kpi-label { font-size: 12px; color: rgba(255,255,255,0.7); }
+.kpi-sub { font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 3px; }
+
+/* Vague */
+.wave { display: block; width: 100%; height: 40px; }
+
+/* ── SECTIONS ── */
+section { padding: 4rem 0; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+.container-sm { max-width: 800px; margin: 0 auto; padding: 0 2rem; }
+.section-eyebrow {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.section-eyebrow .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0;
+}
+.section-title {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: clamp(26px, 4vw, 36px);
+  font-weight: 600;
+  color: var(--blue-dark);
+  margin-bottom: 2rem;
+}
+
+/* ── DESCRIPTION ── */
+.desc-section { background: white; }
+.desc-inner {
+  display: flex; align-items: flex-start; gap: 16px;
+  margin-bottom: 20px;
+}
+.desc-icon {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 16px;
+}
+.desc-text {
+  font-size: 17px;
+  line-height: 1.75;
+  color: var(--blue-dark);
+  padding-left: 20px;
+  border-left: 4px solid var(--accent);
+}
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.tag {
+  font-size: 11px; font-weight: 500;
+  padding: 5px 14px;
+  border-radius: 99px;
+  background: rgba(107,44,145,0.10);
+  color: var(--accent);
+  border: 1px solid rgba(107,44,145,0.2);
+}
+
+/* ── CERCLES ── */
+.cercles-section { background: var(--cream); }
+
+/* ── INDICATEURS ── */
+.indic-section { background: white; }
+.indic-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media(max-width:768px){ .indic-grid { grid-template-columns: 1fr; } }
+.indic-card { border-radius: 14px; border: 1px solid; overflow: hidden; }
+.indic-card-top { padding: 18px 20px 14px; }
+.indic-card-bottom { background: white; padding: 14px 20px 16px; }
+.indic-value {
+  font-family: 'Source Serif 4', Georgia, serif;
+  font-size: 32px; font-weight: 700;
+  line-height: 1; margin-bottom: 4px;
+}
+.indic-label { font-size: 13px; font-weight: 500; color: var(--blue-dark); line-height: 1.4; }
+.indic-source { font-size: 11px; color: #9ca3af; padding-top: 10px; border-top: 1px solid #f3f4f6; margin-top: 10px; }
+.badge-mesure { background: #dcfce7; color: #166534; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+.badge-estim { background: #fef9c3; color: #854d0e; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+
+/* ── TEMOIGNAGES ── */
+.temo-section { background: var(--cream); }
+.temo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media(max-width:768px){ .temo-grid { grid-template-columns: 1fr; } }
+.temo-card { border-radius: 14px; border: 1px solid rgba(107,44,145,.2); overflow: hidden; }
+.temo-header { padding: 16px 24px 12px; background: rgba(107,44,145,.07); }
+.temo-quote-mark {
+  font-family: 'Source Serif 4', serif;
+  font-size: 60px; color: var(--purple);
+  line-height: 0.6; display: block; margin-bottom: -4px;
+}
+.temo-body { background: white; padding: 16px 24px 20px; }
+.temo-citation {
+  font-family: 'Source Serif 4', serif;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--blue-dark);
+  margin-bottom: 16px;
+}
+.temo-footer {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: #9ca3af;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+}
+.temo-pays {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  font-family: monospace;
+  padding: 3px 8px; border-radius: 99px;
+  background: rgba(107,44,145,.15); color: var(--purple);
+}
+.temo-link { color: var(--purple); text-decoration: none; }
+
+/* ── PAYS ── */
+.pays-section { background: white; border-top: 1px solid #f3f4f6; }
+.pays-grid { display: grid; grid-template-columns: repeat(6,1fr); gap: 8px; }
+@media(max-width:900px){ .pays-grid { grid-template-columns: repeat(4,1fr); } }
+@media(max-width:600px){ .pays-grid { grid-template-columns: repeat(3,1fr); } }
+.pays-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px;
+  background: var(--neutral);
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+.pays-code { font-size: 10px; font-family: monospace; font-weight: 700; color: var(--accent); text-transform: uppercase; }
+
+/* ── PARTENAIRES ── */
+.part-section { background: var(--cream); }
+.part-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:600px){ .part-grid { grid-template-columns: 1fr; } }
+.part-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 18px 20px;
+}
+.part-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.part-nom { font-weight: 600; color: var(--blue-dark); font-size: 14px; }
+.part-type {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 3px 10px; border-radius: 99px;
+  background: rgba(107,44,145,.12); color: var(--purple);
+}
+.part-desc { font-size: 13px; color: #6b7280; line-height: 1.5; }
+
+/* ── TIMELINE ── */
+.timeline-section { background: white; }
+.timeline { position: relative; padding-left: 2.5rem; }
+.timeline::before {
+  content: ''; position: absolute;
+  left: 7px; top: 0; bottom: 0; width: 2px;
+  background: rgba(107,44,145,.2);
+}
+.timeline-item { position: relative; margin-bottom: 2rem; }
+.timeline-dot {
+  position: absolute; left: -2.5rem;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--purple);
+  border: 3px solid white;
+  box-shadow: 0 0 0 2px rgba(107,44,145,.3);
+  top: 3px;
+}
+.timeline-date { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #9ca3af; margin-bottom: 4px; }
+.timeline-title { font-size: 17px; font-weight: 600; color: var(--blue-dark); margin-bottom: 4px; }
+.timeline-desc { font-size: 13px; color: #6b7280; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════ HERO ══════════════════════════ -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="breadcrumb">
+      <a href="#">← Tous les projets · PS2 · Démocratie et gouvernance</a>
+      <a href="#" class="btn-download">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z"/>
+          <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z"/>
+        </svg>
+        Fiche d'impact
+      </a>
+    </div>
+
+    <div class="hero-badges">
+      <span class="badge-ps">PS2 · Démocratie & gouvernance</span>
+      <span class="badge-code">PROJ_A14</span>
+      <span class="badge-year">Exercice 2025</span>
+    </div>
+
+    <h1 class="font-editorial">Autonomisation économique des femmes en Francophonie</h1>
+
+    <p class="hero-accroche">« Des revenus multipliés par 3, des familles transformées, un espace francophone plus égalitaire »</p>
+
+    <div class="progress-wrap">
+      <div class="progress-labels">
+        <span>Taux d'exécution budgétaire</span>
+        <span>99%</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill"></div>
+      </div>
+    </div>
+
+    <div class="kpis-grid">
+      <div class="kpi-card highlight">
+        <div class="kpi-value">4,3 M€</div>
+        <div class="kpi-label">Budget engagé</div>
+        <div class="kpi-sub">sur 4,35 M€ alloués</div>
+      </div>
+      <div class="kpi-card regular">
+        <div class="kpi-value">31 pays</div>
+        <div class="kpi-label">Rayonnement</div>
+        <div class="kpi-sub">États membres concernés</div>
+      </div>
+      <div class="kpi-card regular">
+        <div class="kpi-value">9 475</div>
+        <div class="kpi-label">Initiatives retenues</div>
+        <div class="kpi-sub">sur 12 000 candidatures</div>
+      </div>
+      <div class="kpi-card regular">
+        <div class="kpi-value">6,2 M€</div>
+        <div class="kpi-label">Engagement global</div>
+        <div class="kpi-sub">sur la durée du projet</div>
+      </div>
+    </div>
+  </div>
+  <!-- Vague transition -->
+  <svg class="wave" viewBox="0 0 1440 40" preserveAspectRatio="none">
+    <path d="M0,40 L0,20 Q360,0 720,20 Q1080,40 1440,20 L1440,40 Z" fill="white"/>
+  </svg>
+</div>
+
+<!-- ══════════════════════════ DESCRIPTION ══════════════════════════ -->
+<section class="desc-section">
+  <div class="container-sm">
+    <div class="section-eyebrow"><span class="dot"></span> Présentation du projet</div>
+    <div>
+      <p class="desc-text">
+        Le projet vise à renforcer l'autonomisation économique des femmes dans l'espace francophone à travers des programmes d'entrepreneuriat, de formation professionnelle et d'accès aux financements. Il s'inscrit dans le cadre de l'Appel de Kigali et des Objectifs de Développement Durable (ODD 5 — Égalité des sexes), mobilisant 31 pays membres autour d'une vision commune : que chaque femme francophone puisse accéder à des opportunités économiques dignes.
+      </p>
+    </div>
+    <div class="tags">
+      <span class="tag">Genre &amp; égalité</span>
+      <span class="tag">Entrepreneuriat féminin</span>
+      <span class="tag">Microfinance</span>
+      <span class="tag">ODD 5</span>
+      <span class="tag">Formation professionnelle</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ CERCLES ══════════════════════════ -->
+<section class="cercles-section">
+  <div class="container">
+    <div class="section-eyebrow"><span class="dot"></span> Portée de l'impact</div>
+    <h2 class="section-title">Les cercles d'impact</h2>
+  </div>
+
+  <!-- SVG radial inlined -->
+  <div style="max-width:1020px;margin:0 auto;background:white;border-radius:16px;padding:1.5rem 2rem 2rem;box-shadow:0 2px 24px rgba(0,0,0,.08);">
+    <svg viewBox="0 0 980 575" style="width:100%;height:auto;display:block" role="img">
+      <circle cx="490" cy="288" r="222" fill="none" stroke="rgba(0,61,165,.05)" stroke-width="2" stroke-dasharray="5 4"/>
+      <circle cx="490" cy="288" r="205" fill="rgba(0,61,165,.05)" stroke="rgba(0,61,165,.22)" stroke-width="1.2"/>
+      <circle cx="490" cy="288" r="160" fill="rgba(0,61,165,.08)" stroke="rgba(0,61,165,.3)" stroke-width="1.2"/>
+      <circle cx="490" cy="288" r="115" fill="rgba(107,44,145,.09)" stroke="rgba(107,44,145,.32)" stroke-width="1.2"/>
+      <circle cx="490" cy="288" r="70" fill="rgba(107,44,145,.18)" stroke="rgba(107,44,145,.5)" stroke-width="1.5"/>
+      <circle cx="490" cy="288" r="40" fill="#D4A017" stroke="#92620A" stroke-width="2"/>
+      <text x="490" y="106" text-anchor="middle" dominant-baseline="central" fill="rgba(0,61,165,.42)" font-size="17" font-weight="700" font-family="Arial,sans-serif">4</text>
+      <text x="490" y="425" text-anchor="middle" dominant-baseline="central" fill="rgba(0,61,165,.5)" font-size="17" font-weight="700" font-family="Arial,sans-serif">3</text>
+      <text x="398" y="288" text-anchor="middle" dominant-baseline="central" fill="rgba(107,44,145,.62)" font-size="17" font-weight="700" font-family="Arial,sans-serif">2</text>
+      <text x="545" y="288" text-anchor="middle" dominant-baseline="central" fill="rgba(107,44,145,.8)" font-size="17" font-weight="700" font-family="Arial,sans-serif">1</text>
+      <text x="490" y="282" text-anchor="middle" dominant-baseline="central" fill="white" font-size="12" font-weight="800" font-family="Arial,sans-serif">4,3 M€</text>
+      <text x="490" y="297" text-anchor="middle" dominant-baseline="central" fill="rgba(255,255,255,.78)" font-size="6.5" font-family="Arial,sans-serif">Investissement</text>
+      <line x1="490" y1="83" x2="490" y2="68" stroke="rgba(0,61,165,.35)" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <circle cx="490" cy="83" r="3.5" fill="rgba(0,61,165,.4)"/>
+      <line x1="330" y1="288" x2="277" y2="288" stroke="rgba(0,61,165,.35)" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <circle cx="330" cy="288" r="3.5" fill="rgba(0,61,165,.4)"/>
+      <line x1="560" y1="288" x2="618" y2="288" stroke="rgba(107,44,145,.35)" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <circle cx="560" cy="288" r="3.5" fill="rgba(107,44,145,.45)"/>
+      <line x1="490" y1="403" x2="490" y2="416" stroke="rgba(0,61,165,.35)" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <circle cx="490" cy="403" r="3.5" fill="rgba(0,61,165,.4)"/>
+      <!-- N4 TOP -->
+      <rect x="365" y="8" width="250" height="58" rx="8" fill="rgba(0,61,165,.055)" stroke="rgba(0,61,165,.28)" stroke-width="1"/>
+      <rect x="365" y="8" width="250" height="3.5" rx="2" fill="#003da5" opacity=".6"/>
+      <text x="380" y="27" font-family="Inter,sans-serif" font-size="8.5" font-weight="700" fill="rgba(0,61,165,.5)" letter-spacing="1.2">NIVEAU 4</text>
+      <rect x="525" y="18" width="82" height="13" rx="6.5" fill="rgba(91,33,182,.12)"/>
+      <text x="531" y="27.5" font-family="Inter,sans-serif" font-size="8" fill="#5b21b6">● Institutionnel</text>
+      <text x="380" y="45" font-family="Inter,sans-serif" font-size="13.5" font-weight="700" fill="#003da5">Espace francophone</text>
+      <text x="380" y="60" font-family="Inter,sans-serif" font-size="10" fill="#9ca3af">Appel de Kigali · 31 pays · ODD 5</text>
+      <!-- N3 LEFT -->
+      <rect x="8" y="210" width="268" height="130" rx="8" fill="rgba(0,61,165,.055)" stroke="rgba(0,61,165,.25)" stroke-width="1"/>
+      <rect x="8" y="210" width="3.5" height="130" rx="2" fill="#003da5" opacity=".55"/>
+      <text x="24" y="230" font-family="Inter,sans-serif" font-size="8.5" font-weight="700" fill="rgba(0,61,165,.5)" letter-spacing="1.2">NIVEAU 3</text>
+      <rect x="92" y="220" width="55" height="13" rx="6.5" fill="rgba(30,64,175,.12)"/>
+      <text x="97" y="229.5" font-family="Inter,sans-serif" font-size="8" fill="#1e40af">● Observé</text>
+      <text x="24" y="256" font-family="Inter,sans-serif" font-size="13.5" font-weight="700" fill="#003da5">Communautés mobilisées</text>
+      <text x="24" y="278" font-family="Inter,sans-serif" font-size="10.5" fill="#9ca3af">Collectivités, coopératives,</text>
+      <text x="24" y="294" font-family="Inter,sans-serif" font-size="10.5" fill="#9ca3af">réduction documentée des violences</text>
+      <text x="24" y="310" font-family="Inter,sans-serif" font-size="9.5" fill="rgba(0,61,165,.45)" font-style="italic">Missions terrain · OIF 2025</text>
+      <!-- N1 RIGHT -->
+      <rect x="618" y="155" width="358" height="240" rx="10" fill="#f3edf7" stroke="rgba(107,44,145,.3)" stroke-width="1.2"/>
+      <rect x="618" y="155" width="4" height="240" rx="2" fill="#6b2c91" opacity=".75"/>
+      <text x="636" y="177" font-family="Inter,sans-serif" font-size="8.5" font-weight="700" fill="rgba(107,44,145,.55)" letter-spacing="1.2">NIVEAU 1</text>
+      <rect x="712" y="167" width="50" height="13" rx="6.5" fill="rgba(22,101,52,.12)"/>
+      <text x="718" y="176.5" font-family="Inter,sans-serif" font-size="8" fill="#166534">● Mesuré</text>
+      <text x="636" y="222" font-family="'Source Serif 4',Georgia,serif" font-size="28" font-weight="700" fill="#6b2c91">9 475 femmes</text>
+      <text x="636" y="248" font-family="Inter,sans-serif" font-size="14" font-weight="700" fill="#042C53">Bénéficiaires directes</text>
+      <text x="636" y="270" font-family="Inter,sans-serif" font-size="11" fill="#9ca3af">Revenus multipliés par 3 en moyenne</text>
+      <line x1="636" y1="286" x2="968" y2="286" stroke="rgba(107,44,145,.12)" stroke-width="1"/>
+      <text x="636" y="305" font-family="Inter,sans-serif" font-size="10" fill="rgba(107,44,145,.6)">87,4% très satisfaites</text>
+      <text x="636" y="330" font-family="'Source Serif 4',Georgia,serif" font-size="22" font-weight="700" fill="#6b2c91">× 3 revenus</text>
+      <text x="636" y="356" font-family="Inter,sans-serif" font-size="9" fill="rgba(107,44,145,.4)" font-style="italic">Rapport OIF 2025</text>
+      <!-- N2 BOTTOM -->
+      <rect x="328" y="416" width="324" height="150" rx="8" fill="#f0f4fa" stroke="rgba(0,61,165,.22)" stroke-width="1"/>
+      <rect x="328" y="416" width="324" height="3.5" rx="2" fill="#003da5" opacity=".55"/>
+      <text x="346" y="436" font-family="Inter,sans-serif" font-size="8.5" font-weight="700" fill="rgba(0,61,165,.5)" letter-spacing="1.2">NIVEAU 2</text>
+      <rect x="424" y="426" width="44" height="13" rx="6.5" fill="rgba(133,77,14,.12)"/>
+      <text x="429" y="435.5" font-family="Inter,sans-serif" font-size="8" fill="#854d0e">● Estimé</text>
+      <text x="346" y="473" font-family="'Source Serif 4',Georgia,serif" font-size="26" font-weight="700" fill="#003da5">≈ 47 000 personnes</text>
+      <text x="346" y="496" font-family="Inter,sans-serif" font-size="13.5" font-weight="700" fill="#042C53">Familles transformées</text>
+      <text x="346" y="515" font-family="Inter,sans-serif" font-size="10.5" fill="#9ca3af">Scolarisation, santé, alimentation</text>
+      <text x="346" y="533" font-family="Inter,sans-serif" font-size="9" fill="rgba(0,61,165,.45)" font-style="italic">Hyp. : 5 personnes par foyer · Estimation CREXE</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ══════════════════════════ INDICATEURS ══════════════════════════ -->
+<section class="indic-section">
+  <div class="container">
+    <div class="section-eyebrow"><span class="dot"></span> Indicateurs mesurés</div>
+    <h2 class="section-title">Les résultats en chiffres</h2>
+    <div class="indic-grid">
+
+      <div class="indic-card" style="border-color:rgba(107,44,145,.25)">
+        <div class="indic-card-top" style="background:rgba(107,44,145,.07)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px">
+            <span class="indic-value" style="color:#6b2c91">9 475</span>
+            <span class="badge-mesure">● Mesuré</span>
+          </div>
+        </div>
+        <div class="indic-card-bottom">
+          <p class="indic-label">Femmes bénéficiaires directes du programme</p>
+          <p class="indic-source">Source : Rapport final OIF 2025, p. 14</p>
+        </div>
+      </div>
+
+      <div class="indic-card" style="border-color:rgba(107,44,145,.25)">
+        <div class="indic-card-top" style="background:rgba(107,44,145,.07)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px">
+            <span class="indic-value" style="color:#6b2c91">× 3</span>
+            <span class="badge-mesure">● Mesuré</span>
+          </div>
+        </div>
+        <div class="indic-card-bottom">
+          <p class="indic-label">Multiplication moyenne des revenus sur 24 mois</p>
+          <p class="indic-source">Source : Enquête bénéficiaires OIF, échantillon n=1 200</p>
+        </div>
+      </div>
+
+      <div class="indic-card" style="border-color:rgba(0,61,165,.2)">
+        <div class="indic-card-top" style="background:rgba(0,61,165,.06)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px">
+            <span class="indic-value" style="color:#003da5">87,4%</span>
+            <span class="badge-mesure">● Mesuré</span>
+          </div>
+        </div>
+        <div class="indic-card-bottom">
+          <p class="indic-label">Taux de satisfaction très élevée parmi les bénéficiaires</p>
+          <p class="indic-source">Source : Rapport OIF 2025, indicateur satisfaction</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ TEMOIGNAGES ══════════════════════════ -->
+<section class="temo-section">
+  <div class="container">
+    <div class="section-eyebrow"><span class="dot"></span> Voix du terrain</div>
+    <h2 class="section-title">Témoignages et reportages</h2>
+    <div class="temo-grid">
+
+      <figure class="temo-card">
+        <div class="temo-header"><span class="temo-quote-mark">"</span></div>
+        <div class="temo-body">
+          <blockquote class="temo-citation">
+            Avant le programme, je vendais des légumes au marché pour 50 000 FCFA par mois. Aujourd'hui, ma coopérative compte 12 femmes et notre chiffre d'affaires dépasse 600 000 FCFA. Ma fille peut aller à l'école.
+          </blockquote>
+          <figcaption class="temo-footer">
+            <span class="temo-pays">BF</span>
+            <a href="#" class="temo-link">RFI Afrique — reportage terrain 2025 ↗</a>
+          </figcaption>
+        </div>
+      </figure>
+
+      <figure class="temo-card">
+        <div class="temo-header"><span class="temo-quote-mark">"</span></div>
+        <div class="temo-body">
+          <blockquote class="temo-citation">
+            L'accès au microcrédit OIF a été un tournant. En 18 mois, j'ai remboursé intégralement et ouvert un deuxième atelier de couture. Je forme maintenant six apprenties.
+          </blockquote>
+          <figcaption class="temo-footer">
+            <span class="temo-pays">SN</span>
+            <a href="#" class="temo-link">Mission OIF Dakar, rapport 2025 ↗</a>
+          </figcaption>
+        </div>
+      </figure>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ PAYS ══════════════════════════ -->
+<section class="pays-section">
+  <div class="container">
+    <div class="section-eyebrow"><span class="dot"></span> Rayonnement géographique</div>
+    <h2 class="section-title">31 pays d'intervention</h2>
+    <div class="pays-grid">
+      <div class="pays-item"><span class="pays-code">BF</span>Burkina Faso</div>
+      <div class="pays-item"><span class="pays-code">SN</span>Sénégal</div>
+      <div class="pays-item"><span class="pays-code">ML</span>Mali</div>
+      <div class="pays-item"><span class="pays-code">CI</span>Côte d'Ivoire</div>
+      <div class="pays-item"><span class="pays-code">CM</span>Cameroun</div>
+      <div class="pays-item"><span class="pays-code">MG</span>Madagascar</div>
+      <div class="pays-item"><span class="pays-code">HT</span>Haïti</div>
+      <div class="pays-item"><span class="pays-code">MA</span>Maroc</div>
+      <div class="pays-item"><span class="pays-code">TN</span>Tunisie</div>
+      <div class="pays-item"><span class="pays-code">BE</span>Bénin</div>
+      <div class="pays-item"><span class="pays-code">RW</span>Rwanda</div>
+      <div class="pays-item"><span class="pays-code">CD</span>R.D. Congo</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ PARTENAIRES ══════════════════════════ -->
+<section class="part-section">
+  <div class="container">
+    <div class="section-eyebrow"><span class="dot"></span> Alliances</div>
+    <h2 class="section-title">Partenaires engagés</h2>
+    <div class="part-grid">
+      <div class="part-card">
+        <div class="part-header">
+          <p class="part-nom">ONU Femmes</p>
+          <span class="part-type">Institutionnel</span>
+        </div>
+        <p class="part-desc">Co-financement et expertise genre pour le déploiement des modules de formation AGR en Afrique subsaharienne.</p>
+      </div>
+      <div class="part-card">
+        <div class="part-header">
+          <p class="part-nom">Banque Africaine de Développement (BAD)</p>
+          <span class="part-type">Financier</span>
+        </div>
+        <p class="part-desc">Appui au mécanisme de micro-crédit et garantie de prêt pour les coopératives féminines.</p>
+      </div>
+      <div class="part-card">
+        <div class="part-header">
+          <p class="part-nom">ACTED</p>
+          <span class="part-type">Terrain</span>
+        </div>
+        <p class="part-desc">Mise en œuvre opérationnelle des formations AGR dans les zones rurales (Sahel, Grands Lacs).</p>
+      </div>
+      <div class="part-card">
+        <div class="part-header">
+          <p class="part-nom">Réseau des Femmes Africaines Gouvernantes (REFAG)</p>
+          <span class="part-type">Réseau</span>
+        </div>
+        <p class="part-desc">Plaidoyer institutionnel, accès aux décideuses politiques et capitalisation des bonnes pratiques.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════ TIMELINE ══════════════════════════ -->
+<section class="timeline-section">
+  <div class="container-sm">
+    <div class="section-eyebrow"><span class="dot"></span> Jalons</div>
+    <h2 class="section-title">Événements marquants</h2>
+    <ol class="timeline">
+      <li class="timeline-item">
+        <div class="timeline-dot"></div>
+        <p class="timeline-date">Janvier 2024</p>
+        <h3 class="timeline-title">Lancement officiel — Sommet de Kigali</h3>
+        <p class="timeline-desc">Signature de l'Appel de Kigali pour l'autonomisation économique des femmes francophones par 31 chefs d'État.</p>
+      </li>
+      <li class="timeline-item">
+        <div class="timeline-dot"></div>
+        <p class="timeline-date">Juin 2024</p>
+        <h3 class="timeline-title">Sélection des 9 475 bénéficiaires</h3>
+        <p class="timeline-desc">Processus de sélection finalisé dans 31 pays avec les opérateurs locaux partenaires.</p>
+      </li>
+      <li class="timeline-item">
+        <div class="timeline-dot"></div>
+        <p class="timeline-date">Décembre 2024</p>
+        <h3 class="timeline-title">Première vague de résultats</h3>
+        <p class="timeline-desc">Publication du rapport intermédiaire : 87,4% de satisfaction, revenus × 3 en 12 mois pour les premières cohortes.</p>
+      </li>
+      <li class="timeline-item">
+        <div class="timeline-dot"></div>
+        <p class="timeline-date">Mars 2025</p>
+        <h3 class="timeline-title">Forum des bénéficiaires — Paris</h3>
+        <p class="timeline-desc">Rencontre internationale des lauréates, présentation des résultats au Secrétariat général de la Francophonie.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+</body>
+</html>

@@ -1,3 +1,7 @@
+/* ─── Imports (doivent être en premier) ───────────────────────────────────── */
+/* Règle CSS : tous les @import doivent précéder toute autre règle.           */
+/* On place donc les polices Google Fonts ici, avant @import "tailwindcss".   */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
 @import "tailwindcss";
 
 /* ─── Palette OIF ─────────────────────────────────────────── */
@@ -5,7 +9,8 @@
   /* Couleurs institutionnelles */
   --oif-blue:        #003DA5;   /* institutionnel, chiffres factuels */
   --oif-blue-dark:   #042C53;   /* texte sur fond clair */
-  --oif-purple:      #6B2C91;   /* transformation humaine, résultats qualitatifs */
+  --oif-purple:      #6B2C91;   /* PS2 — démocratie et gouvernance */
+  --oif-green:       #0F6E56;   /* PS3 — développement durable */
   --oif-gold:        #D4A017;   /* chiffres-chocs, accents */
   --oif-cream:       #FAF7F0;   /* fond doux pour sections éditoriales */
   --oif-neutral:     #F0F4FA;   /* surfaces secondaires */
@@ -27,6 +32,7 @@
   --color-oif-blue:           var(--oif-blue);
   --color-oif-blue-dark:      var(--oif-blue-dark);
   --color-oif-purple:         var(--oif-purple);
+  --color-oif-green:          var(--oif-green);
   --color-oif-gold:           var(--oif-gold);
   --color-oif-cream:          var(--oif-cream);
   --color-oif-neutral:        var(--oif-neutral);
@@ -36,17 +42,25 @@
 }
 
 /* ─── Typographie ─────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', system-ui, sans-serif;
+  /* --font-inter est injecté par next/font dans layout.tsx */
+  font-family: var(--font-inter, 'Inter', system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
 }
 
 .font-editorial {
-  font-family: 'Source Serif 4', Georgia, serif;
+  /* --font-source-serif est injecté par next/font dans layout.tsx */
+  font-family: var(--font-source-serif, 'Source Serif 4', Georgia, serif);
+}
+
+/* Tailwind v4 : on expose les polices comme utilitaires */
+.font-sans {
+  font-family: var(--font-inter, 'Inter', system-ui, sans-serif);
+}
+.font-serif {
+  font-family: var(--font-source-serif, 'Source Serif 4', Georgia, serif);
 }
 
 /* ─── Utilitaires OIF ─────────────────────────────────────── */
@@ -59,4 +73,46 @@ body {
 .bg-oif-blue          { background-color: var(--oif-blue); }
 .bg-oif-blue-dark     { background-color: var(--oif-blue-dark); }
 .bg-oif-purple        { background-color: var(--oif-purple); }
+.bg-oif-green         { background-color: var(--oif-green); }
+.text-oif-green       { color: var(--oif-green); }
+.border-oif-green     { border-color: var(--oif-green); }
 .border-oif-blue      { border-color: var(--oif-blue); }
+
+/* ─── Composants formulaire réutilisables ─────────────────── */
+/* La classe .input-field est utilisée dans tous les formulaires admin */
+/* Elle uniformise l'apparence et le comportement des champs de saisie */
+.input-field {
+  width: 100%;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  font-size: 0.875rem;
+  color: var(--oif-blue-dark);
+  background-color: #ffffff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--oif-blue);
+  box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.1);
+}
+
+.input-field::placeholder {
+  color: #9ca3af;
+}
+
+select.input-field {
+  cursor: pointer;
+  appearance: auto;
+}
+
+/* ─── Animation loader ─────────────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+}

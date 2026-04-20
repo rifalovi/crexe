@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(curl -sS -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -sS -o /dev/null -w \"HTTP %{http_code}  time=%{time_total}s\\\\n\" http://localhost:3000/)",
+      "mcp__5a9bb655-24d3-4e68-866b-be7d1d852782__execute_sql",
+      "mcp__5a9bb655-24d3-4e68-866b-be7d1d852782__list_projects",
+      "Bash(curl -sS -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/projets)",
+      "Bash(curl -sS -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/projets/PROJ_A14)",
+      "Bash(curl -sS -o /dev/null -w \"HTTP %{http_code}\\\\n\" \"http://localhost:3000/projets?ps=PS3\")"
+    ]
+  }
+}
