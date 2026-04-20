@@ -261,8 +261,8 @@ export default async function HomePage() {
 
           {/* Titre principal — police éditoriale Source Serif 4 */}
           <h1 className="font-editorial text-4xl md:text-6xl font-semibold leading-tight max-w-3xl mb-4">
-            La Francophonie{' '}
-            <span className="text-[var(--oif-gold)]">agit</span>
+            Compte rendu d&apos;exécution des actions{' '}
+            <span className="text-[var(--oif-gold)]">de l&apos;OIF</span>
           </h1>
 
           <p className="text-white/60 text-lg max-w-2xl leading-relaxed mb-10">

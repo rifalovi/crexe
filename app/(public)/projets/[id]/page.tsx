@@ -717,14 +717,14 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path strokeLinecap="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    Enquête ERA 2025
+                    Mesure ERA 2025
                   </span>
                 </div>
                 <h2 className="font-editorial text-3xl md:text-4xl font-semibold text-[var(--oif-blue-dark)] mb-3">
-                  Résultats de l&apos;enquête ERA
+                  Résultats de la mesure ERA
                 </h2>
                 <p className="text-gray-500 max-w-2xl text-sm leading-relaxed">
-                  Effets mesurés, estimés ou observés issus de l&apos;Évaluation des Résultats et Apprentissages (ERA 2025).
+                  Effets mesurés, estimés ou observés issus de la Mesure des Résultats et Apprentissages (ERA 2025).
                   Chaque indicateur est sourcé et qualifié selon le niveau de preuve disponible.
                 </p>
               </div>
