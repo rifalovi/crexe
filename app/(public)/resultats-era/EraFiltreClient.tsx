@@ -86,7 +86,7 @@ function BlocNiveau({ result }: { result: ResultatEra }) {
       </div>
       <div className="space-y-2">
         {paragraphes.map((p, i) => (
-          <p key={i} className={`text-sm leading-relaxed ${i === 0 ? 'font-medium text-gray-800' : 'text-gray-600'}`}>
+          <p key={i} className={`text-sm leading-relaxed text-justify ${i === 0 ? 'font-medium text-gray-800' : 'text-gray-600'}`}>
             {p}
           </p>
         ))}
