@@ -292,8 +292,6 @@ export default function AdminEraPage() {
     return true
   })
 
-  const annees = [...new Set(resultats.map(r => r.annee_exercice))].sort()
-
   return (
     <div className="p-6 max-w-7xl">
 
