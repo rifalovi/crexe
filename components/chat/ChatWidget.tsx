@@ -17,6 +17,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { SUGGESTIONS_DEMARRAGE } from '@/lib/llm/prompts'
+import { getEditionActiveCookie } from '@/lib/edition-context'
 
 // ─── Rendu Markdown → HTML ────────────────────────────────────────────────────
 // Gère : tableaux, listes, titres ##/###, gras, italique, liens, code inline
@@ -245,6 +246,7 @@ export default function ChatWidget({ projetId }: ChatWidgetProps) {
           question: q,
           projetId,
           historique: getHistorique(),
+          editionAnnee: getEditionActiveCookie(),  // filtre RAG par édition active
         }),
       })
 

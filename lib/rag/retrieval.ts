@@ -12,6 +12,11 @@
 //   4. Claude génère une réponse ancrée dans ces passages réels
 //
 // Avantage : la réponse est toujours sourcée, jamais hallucinée.
+//
+// Concept pédagogique — Filtre multi-éditions :
+// La fonction match_documents() accepte maintenant p_edition_annee.
+// Elle retourne les documents de l'édition demandée OU les documents partagés
+// (edition_annee IS NULL — ex: méthodologie ERA valable pour toutes les éditions).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { createClient } from '@supabase/supabase-js'
@@ -34,6 +39,7 @@ export interface DocumentChunk {
   section: string | null
   source_document: string | null
   source_page: number | null
+  edition_annee: number | null
   similarity: number
 }
 
@@ -42,14 +48,16 @@ export interface DocumentChunk {
  *
  * @param question       La question de l'utilisateur (en langage naturel)
  * @param matchCount     Nombre de chunks à retourner (défaut : 8)
- * @param threshold      Seuil de similarité minimum 0-1 (défaut : 0.5)
+ * @param threshold      Seuil de similarité minimum 0-1 (défaut : 0.45)
  * @param projetId       Filtrer sur un projet spécifique (optionnel)
+ * @param editionAnnee   Filtrer sur une édition CREXE (ex: 2024, 2025). NULL = toutes éditions + partagés.
  */
 export async function retrieveContexte(
   question: string,
   matchCount = 8,
-  threshold = 0.5,
-  projetId?: string
+  threshold = 0.45,
+  projetId?: string,
+  editionAnnee?: number | null
 ): Promise<DocumentChunk[]> {
   const supabase = getSupabaseAdmin()
 
@@ -57,11 +65,15 @@ export async function retrieveContexte(
   const queryEmbedding = await generateEmbedding(question)
 
   // Étape 2 : appeler la fonction pgvector match_documents
+  // Paramètres alignés sur la fonction SQL mise à jour dans migration_multi_editions.sql :
+  //   - p_projet_id (ex: filter_projet_id était incorrect)
+  //   - p_edition_annee : filtre l'édition. NULL = tous les documents + partagés.
   const { data, error } = await supabase.rpc('match_documents', {
     query_embedding: queryEmbedding,
     match_threshold: threshold,
     match_count: matchCount,
-    filter_projet_id: projetId ?? null,
+    p_projet_id: projetId ?? null,
+    p_edition_annee: editionAnnee ?? null,
   })
 
   if (error) {
@@ -88,6 +100,7 @@ export function formaterContexte(chunks: DocumentChunk[]): string {
         c.source_page ? `p. ${c.source_page}` : null,
         c.section,
         c.projet_id ? `Projet ${c.projet_id}` : null,
+        c.edition_annee ? `CREXE ${c.edition_annee}` : 'Partagé (méthodologie)',
       ].filter(Boolean).join(' · ')
 
       return `[Document ${i + 1}${source ? ` — ${source}` : ''}]\n${c.contenu}`
@@ -98,12 +111,17 @@ export function formaterContexte(chunks: DocumentChunk[]): string {
 /**
  * Pipeline complet : question → contexte formaté.
  * Utilisé directement dans la route API /api/chat.
+ *
+ * @param question       Question en langage naturel
+ * @param projetId       Filtrer sur un projet spécifique (optionnel)
+ * @param editionAnnee   Édition CREXE (2024, 2025…). NULL = toutes éditions.
  */
 export async function getContextePourQuestion(
   question: string,
-  projetId?: string
+  projetId?: string,
+  editionAnnee?: number | null
 ): Promise<{ contexte: string; chunks: DocumentChunk[] }> {
-  const chunks = await retrieveContexte(question, 8, 0.45, projetId)
+  const chunks = await retrieveContexte(question, 8, 0.45, projetId, editionAnnee)
   const contexte = formaterContexte(chunks)
   return { contexte, chunks }
 }

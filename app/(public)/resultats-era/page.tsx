@@ -1,86 +1,259 @@
-// ─── Résultats ERA — Page publique ────────────────────────────────────────────
-// Page en cours de développement. Affiche un message d'attente institutionnel.
-// Structure prête pour accueillir les résultats d'enquête ERA par projet.
+// ─── Résultats ERA 2024 — Page publique ───────────────────────────────────────
+// Server Component : toutes les données sont chargées côté serveur.
+// Le filtrage exclusif par PS est délégué à EraFiltreClient (Client Component).
+//
+// Source : Rapport d'enquête ERA 2024, OIF (août 2025)
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { createServerClient } from '@supabase/ssr'
 import Link from 'next/link'
+import EraEditionSwitcher from './EraEditionSwitcher'
+import EraFiltreClient from './EraFiltreClient'
 
 export const metadata = {
-  title: 'Résultats ERA — CREXE 2025',
-  description: "Résultats de l'Enquête Rapide Annuelle (ERA) par projet OIF.",
+  title: 'Résultats ERA 2024 — CREXE',
+  description: "Résultats de l'Enquête Rapide Annuelle (ERA) 2024 par projet OIF — PS1, PS2, PS3.",
 }
 
-export default function ResultatsEraPage() {
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface ResultatEra {
+  id: string
+  ps_id: string
+  projet_code: string | null
+  projet_nom: string
+  titre_section: string
+  niveau: string
+  contenu: string
+  chiffre_cle: string | null
+  annee_exercice: number
+  ordre: number
+}
+
+// ─── Chargement des données ───────────────────────────────────────────────────
+async function getData() {
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { cookies: { getAll: () => [], setAll: () => {} } }
+  )
+
+  const { data, error } = await supabase
+    .from('resultats_era')
+    .select('*')
+    .eq('annee_exercice', 2024)
+    .order('ordre', { ascending: true })
+
+  if (error) {
+    console.error('Erreur chargement résultats ERA:', error)
+    return []
+  }
+  return (data ?? []) as ResultatEra[]
+}
+
+// ─── Page principale ──────────────────────────────────────────────────────────
+export default async function ResultatsEraPage() {
+  const resultats = await getData()
+
+  // Regrouper par PS puis par projet (clé = projet_code ?? projet_nom)
+  const parPS: Record<string, Record<string, ResultatEra[]>> = {}
+  for (const r of resultats) {
+    if (!parPS[r.ps_id]) parPS[r.ps_id] = {}
+    const key = r.projet_code ?? r.projet_nom
+    if (!parPS[r.ps_id][key]) parPS[r.ps_id][key] = []
+    parPS[r.ps_id][key].push(r)
+  }
+
+  const noData = resultats.length === 0
+
   return (
-    <div className="min-h-[70vh] flex items-center justify-center px-6 py-20">
-      <div className="max-w-2xl w-full">
+    <div className="min-h-screen bg-[var(--oif-neutral)]">
 
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 bg-[var(--oif-blue)]/8 text-[var(--oif-blue)] text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-full mb-6">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--oif-blue)] animate-pulse" />
-          En cours de développement
-        </div>
-
-        <h1 className="font-editorial text-3xl md:text-4xl font-semibold text-[var(--oif-blue-dark)] mb-4">
-          Résultats de l&apos;enquête ERA
-        </h1>
-        <p className="text-gray-500 text-sm mb-8 leading-relaxed">
-          Enquête Rapide Annuelle (ERA) — Programmation 2024-2027
-        </p>
-
-        {/* Message Carlos */}
-        <div className="bg-[var(--oif-neutral)] rounded-2xl border border-gray-100 px-7 py-6 mb-8">
-          <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-[var(--oif-blue)] flex items-center justify-center flex-shrink-0 mt-0.5">
-              <span className="text-white text-xs font-bold">CH</span>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 mb-2">Carlos H.</p>
-              <p className="text-gray-700 leading-relaxed">
-                Cher(e)s collègues, je suis toujours en train de développer cette partie de
-                la plateforme. Dès qu&apos;elle sera achevée, je vous en tiendrai informé(e)s.
-              </p>
-              <p className="text-[var(--oif-blue)] font-semibold mt-3 text-sm">
-                Bien cordialement, Carlos H.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Aperçu de la structure à venir */}
-        <div className="rounded-2xl border border-dashed border-gray-200 overflow-hidden">
-          <div className="bg-gray-50 px-5 py-3 border-b border-dashed border-gray-200">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Structure prévue de cette section
-            </p>
-          </div>
-          <div className="divide-y divide-dashed divide-gray-100">
-            {[
-              { icon: '📋', titre: 'Section Rappel', desc: 'Objectif ERA, périmètre, méthodologie et protocole d\'enquête par projet' },
-              { icon: '📊', titre: 'Résultats par projet', desc: 'Questionnaire, population, échantillon, taux de complétion, tableaux détaillés' },
-              { icon: '🤖', titre: 'Analyse IA intégrée', desc: 'Analyse automatique des résultats avec graphiques, rapport DOCX téléchargeable' },
-              { icon: '📅', titre: 'Historique CREX', desc: 'Résultats ERA 2024 · 2025 · 2026 — comparaison inter-éditions' },
-            ].map((item) => (
-              <div key={item.titre} className="px-5 py-4 flex items-start gap-3 opacity-60">
-                <span className="text-xl flex-shrink-0">{item.icon}</span>
-                <div>
-                  <p className="text-sm font-semibold text-gray-700">{item.titre}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex gap-3 mt-8">
-          <Link href="/" className="inline-flex items-center gap-2 bg-[var(--oif-blue)] text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-[var(--oif-blue-dark)] transition">
+      {/* ─── Hero ─────────────────────────────────────────────────────────── */}
+      <div className="bg-[var(--oif-blue-dark)] text-white">
+        <div className="max-w-7xl mx-auto px-6 pt-10 pb-12">
+          <Link href="/" className="inline-flex items-center gap-2 text-white/50 hover:text-white text-xs mb-6 transition">
             ← Accueil
           </Link>
-          <Link href="/projets" className="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 text-sm font-medium px-5 py-2.5 rounded-lg hover:border-[var(--oif-blue)] hover:text-[var(--oif-blue)] transition">
-            Voir les projets
-          </Link>
+
+          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/80 text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-full mb-5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[var(--oif-gold)] animate-pulse" />
+            Enquête Rapide Annuelle · CREXE 2024
+          </div>
+          <h1 className="font-editorial text-3xl md:text-4xl font-semibold mb-3">
+            Résultats de l&apos;ERA 2024
+          </h1>
+          <p className="text-white/60 max-w-2xl text-sm leading-relaxed mb-10">
+            Effets mesurés auprès des bénéficiaires directs des projets OIF — PS1, PS2, PS3.
+            Source : Rapport d&apos;enquête ERA 2024, OIF (août 2025).
+          </p>
+
+          {/* ── Infographie synthèse globale ──────────────────────────────── */}
+          {!noData && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { val: '13', label: 'projets enquêtés', sub: 'sur 20 projets OIF', icon: '📋' },
+                { val: '34', label: 'États membres', sub: "de l'espace francophone", icon: '🌍' },
+                { val: '75–100%', label: 'acquisition compétences', sub: 'tous projets confondus', icon: '🎓' },
+                { val: '9 706', label: 'femmes en AGR', sub: 'Fonds Francophonie avec Elles', icon: '👩‍🌾' },
+              ].map(({ val, label, sub, icon }) => (
+                <div key={label} className="bg-white/8 border border-white/15 rounded-2xl p-4 text-center backdrop-blur-sm">
+                  <div className="text-2xl mb-2">{icon}</div>
+                  <p className="text-xl md:text-2xl font-black text-[var(--oif-gold)] leading-tight">{val}</p>
+                  <p className="text-white/80 text-xs font-semibold mt-1">{label}</p>
+                  <p className="text-white/40 text-[10px] mt-0.5 leading-tight">{sub}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* ── Infographie par programme stratégique ───────────────────────── */}
+      {!noData && (
+        <div className="bg-white border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-6 py-8">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5">
+              Synthèse par programme stratégique · ERA 2024
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+              {/* PS1 */}
+              <div className="rounded-2xl border p-5" style={{ borderColor: '#C7D5F5', backgroundColor: '#EBF0FA' }}>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">📚</span>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ backgroundColor: '#003DA520', color: '#003DA5' }}>PS1</span>
+                  <span className="text-xs font-semibold text-gray-600">Langue & Éducation</span>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { proj: 'Langue internationale', taux: '75%' },
+                    { proj: 'IFADEM', taux: '99%' },
+                    { proj: 'ELAN', taux: '95%' },
+                    { proj: 'CLAC', taux: '98%' },
+                    { proj: 'Industrie culturelle', taux: '86%' },
+                  ].map(({ proj, taux }) => (
+                    <div key={proj} className="flex items-center gap-2">
+                      <div className="h-1.5 flex-1 bg-white/60 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-[#003DA5]" style={{ width: taux }} />
+                      </div>
+                      <span className="text-xs font-bold text-[#003DA5] w-10 text-right flex-shrink-0">{taux}</span>
+                      <span className="text-[10px] text-gray-500 w-24 truncate flex-shrink-0">{proj}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* PS2 */}
+              <div className="rounded-2xl border p-5" style={{ borderColor: '#DEC5EE', backgroundColor: '#F3EAF9' }}>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">⚖️</span>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ backgroundColor: '#6B2C9120', color: '#6B2C91' }}>PS2</span>
+                  <span className="text-xs font-semibold text-gray-600">Démocratie & Gouvernance</span>
+                </div>
+                <div className="space-y-2">
+                  {[
+                    { proj: 'État civil', taux: '94%' },
+                    { proj: 'Désinformation', taux: '69%' },
+                    { proj: 'Processus démocratique', taux: '71%' },
+                    { proj: 'Paix & stabilité', taux: '49%' },
+                    { proj: 'Tous projets PS2', taux: '100%' },
+                  ].map(({ proj, taux }, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="h-1.5 flex-1 bg-white/60 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-[#6B2C91]" style={{ width: taux }} />
+                      </div>
+                      <span className="text-xs font-bold text-[#6B2C91] w-10 text-right flex-shrink-0">{taux}</span>
+                      <span className="text-[10px] text-gray-500 w-24 truncate flex-shrink-0">{proj}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* PS3 */}
+              <div className="rounded-2xl border p-5" style={{ borderColor: '#B3DDD7', backgroundColor: '#E6F4F1' }}>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xl">🌿</span>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ backgroundColor: '#0F6E5620', color: '#0F6E56' }}>PS3</span>
+                  <span className="text-xs font-semibold text-gray-600">Développement durable</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  {[
+                    { val: '100%', label: 'amélioration conditions (FAE)' },
+                    { val: '65%', label: 'jeunes/femmes utilisant compétences' },
+                    { val: '39%', label: 'insertion numérique (cible: 60%)' },
+                    { val: '55%', label: 'retombées Bassin du Congo' },
+                  ].map(({ val, label }) => (
+                    <div key={label} className="bg-white/70 rounded-xl p-2.5 text-center">
+                      <p className="text-base font-black text-[#0F6E56] leading-tight">{val}</p>
+                      <p className="text-[9px] text-gray-500 mt-0.5 leading-tight">{label}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-white/60 rounded-xl p-3 border border-[#0F6E56]/15">
+                  <p className="text-[10px] font-bold text-[#0F6E56] mb-1">💼 Emploi & autonomisation</p>
+                  <p className="text-[10px] text-gray-600 leading-relaxed">
+                    Accès à l&apos;emploi, stabilité professionnelle, augmentation des revenus
+                    et autonomie économique pour les jeunes et les femmes.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Sélecteur d'édition ERA ──────────────────────────────────────── */}
+      <EraEditionSwitcher />
+
+      {/* ── État vide ───────────────────────────────────────────────────── */}
+      {noData ? (
+        <div className="max-w-7xl mx-auto px-6 py-16">
+          <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center max-w-2xl mx-auto">
+            <div className="text-4xl mb-4">📋</div>
+            <h2 className="text-xl font-semibold text-[var(--oif-blue-dark)] mb-3">
+              Données ERA à charger
+            </h2>
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+              Exécutez les deux scripts SQL suivants dans Supabase pour charger les résultats ERA 2024 :
+            </p>
+            <div className="text-left bg-[var(--oif-neutral)] rounded-xl p-4 font-mono text-xs text-gray-700 space-y-2 mb-6">
+              <p className="font-bold text-gray-900">1. Migration (à exécuter une seule fois)</p>
+              <p className="text-gray-500">docs/migration_resultats_era.sql</p>
+              <p className="font-bold text-gray-900 mt-3">2. Seed des données ERA 2024</p>
+              <p className="text-gray-500">data/seeds/seed_resultats_era_2024.sql</p>
+            </div>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 bg-[var(--oif-blue)] text-white text-sm font-medium px-5 py-2.5 rounded-lg hover:bg-[var(--oif-blue-dark)] transition"
+            >
+              ← Retour à l&apos;accueil
+            </Link>
+          </div>
+        </div>
+      ) : (
+        /* ── Filtres + contenu interactif (Client Component) ─────────── */
+        <EraFiltreClient resultats={resultats} parPS={parPS} />
+      )}
+
+      {/* ─── Footer simplifié ─────────────────────────────────────────────── */}
+      <footer className="bg-[var(--oif-blue-dark)] text-white py-8 mt-10">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-[var(--oif-gold)] flex items-center justify-center">
+              <span className="text-white font-black text-[10px]">OIF</span>
+            </div>
+            <span className="text-white/60 text-xs">CREXE 2024 · Résultats ERA</span>
+          </div>
+          <p className="text-white/30 text-xs">
+            Source : Rapport d&apos;enquête ERA 2024 — OIF, août 2025
+          </p>
+          <Link href="/" className="text-white/50 hover:text-white text-xs transition">
+            ← Accueil
+          </Link>
+        </div>
+      </footer>
+
     </div>
   )
 }

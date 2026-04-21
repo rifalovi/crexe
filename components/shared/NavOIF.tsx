@@ -6,6 +6,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { CREX_ANNEE } from '@/lib/constants'
+import EditionSwitcher from '@/components/shared/EditionSwitcher'
 
 // ─── Re-export pour la rétrocompatibilité des imports existants ───────────────
 export { CREX_ANNEE }
@@ -66,12 +67,16 @@ export function NavOIF() {
           </Link>
         </div>
 
-        <Link
-          href="/admin"
-          className="text-xs text-white/40 hover:text-white/80 transition"
-        >
-          Espace admin →
-        </Link>
+        {/* Sélecteur d'édition — Client Component intégré dans le Server Component */}
+        <div className="flex items-center gap-3">
+          <EditionSwitcher compact />
+          <Link
+            href="/admin"
+            className="text-xs text-white/40 hover:text-white/80 transition hidden md:block"
+          >
+            Admin →
+          </Link>
+        </div>
       </div>
     </nav>
   )

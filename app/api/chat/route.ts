@@ -19,6 +19,7 @@ import { NextRequest } from 'next/server'
 import OpenAI from 'openai'
 import { getContextePourQuestion } from '@/lib/rag/retrieval'
 import { getContextePlateforme } from '@/lib/rag/platform-context'
+import { getEditionFromRequest } from '@/lib/edition-context'
 import {
   PROMPT_SYSTEME_CHATBOT,
   PROMPT_UTILISATEUR_TEMPLATE,
@@ -41,6 +42,7 @@ interface ChatRequest {
   question: string
   projetId?: string
   historique?: MessageHistorique[]
+  editionAnnee?: number | null   // édition CREXE active (2024, 2025…)
 }
 
 // ─── Constantes ──────────────────────────────────────────────────────────────
@@ -63,7 +65,10 @@ function estHorsPerimetre(question: string): boolean {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as ChatRequest
-    const { question, projetId, historique = [] } = body
+    const { question, projetId, historique = [], editionAnnee } = body
+
+    // Résoudre l'édition active : corps JSON > header > cookie > défaut
+    const editionActive = getEditionFromRequest(req.headers, editionAnnee ?? null)
 
     // ── Validation ────────────────────────────────────────────────────────
     if (!question || typeof question !== 'string') {
@@ -88,11 +93,12 @@ export async function POST(req: NextRequest) {
     //             → enrichit avec les nuances narratives des rapports
     //
     // Les deux s'exécutent en parallèle pour minimiser la latence.
+    // Les deux sources s'exécutent en parallèle, toutes deux filtrées par édition active.
     const [contextePlateforme, contexteRag] = await Promise.all([
-      getContextePlateforme(questionClean),
+      getContextePlateforme(questionClean, editionActive),
       (async () => {
         try {
-          const result = await getContextePourQuestion(questionClean, projetId)
+          const result = await getContextePourQuestion(questionClean, projetId, editionActive)
           return result.contexte
         } catch {
           return '' // RAG optionnel si pgvector non configuré

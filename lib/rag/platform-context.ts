@@ -11,9 +11,15 @@
 //      → projets, indicateurs, témoignages, ERA — toujours à jour, jamais périmés.
 //
 // L'API chat combine les deux pour un contexte complet et fiable.
+//
+// Concept pédagogique — Filtre par édition :
+// En multi-éditions, chaque projet appartient à un exercice (annee_exercice).
+// On filtre ici sur l'édition active pour que le chatbot réponde sur les données
+// correctes : si l'utilisateur consulte le CREXE 2024, Claude parle du CREXE 2024.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { createClient } from '@supabase/supabase-js'
+import { CREX_ANNEE } from '@/lib/constants'
 
 function supabaseAdmin() {
   return createClient(
@@ -49,10 +55,16 @@ interface IndicateurContexte {
 }
 
 // ─── 1. Récupérer tous les projets publiés avec leurs indicateurs clés ────────
-export async function getProjetsContexte(): Promise<ProjetContexte[]> {
+/**
+ * @param editionAnnee  Filtre sur l'exercice (défaut : CREX_ANNEE = 2025).
+ *                      Passer NULL pour récupérer toutes les éditions.
+ */
+export async function getProjetsContexte(
+  editionAnnee: number | null = CREX_ANNEE
+): Promise<ProjetContexte[]> {
   const supabase = supabaseAdmin()
 
-  const { data: projets, error } = await supabase
+  let query = supabase
     .from('projets')
     .select(`
       id, code_officiel, nom, accroche, description, ps_id,
@@ -61,10 +73,19 @@ export async function getProjetsContexte(): Promise<ProjetContexte[]> {
     .eq('statut', 'publie')
     .order('code_officiel')
 
+  // Filtrer par édition si spécifiée
+  if (editionAnnee !== null) {
+    query = query.eq('annee_exercice', editionAnnee)
+  }
+
+  const { data: projets, error } = await query
+
   if (error || !projets) return []
 
   // Charger les indicateurs mise_en_avant pour chaque projet
   const projetIds = projets.map(p => p.id)
+  if (projetIds.length === 0) return []
+
   const { data: indicateurs } = await supabase
     .from('indicateurs')
     .select('projet_id, libelle, valeur_numerique, valeur_texte, unite, type_preuve, categorie, mise_en_avant')
@@ -131,11 +152,15 @@ export function filtrerProjetsParQuestion(
 }
 
 // ─── 3. Formater le contexte plateforme pour l'injection dans le prompt ───────
-export function formaterContextePlateforme(projets: ProjetContexte[]): string {
+export function formaterContextePlateforme(
+  projets: ProjetContexte[],
+  editionAnnee?: number | null
+): string {
   if (projets.length === 0) return ''
 
+  const anneeLabel = editionAnnee ? ` — Édition ${editionAnnee}` : ''
   const lignes: string[] = [
-    '## Données en direct — Plateforme CREXE',
+    `## Données en direct — Plateforme CREXE${anneeLabel}`,
     '',
     `Projets disponibles : ${projets.length}`,
     '',
@@ -166,11 +191,18 @@ export function formaterContextePlateforme(projets: ProjetContexte[]): string {
 }
 
 // ─── 4. Pipeline complet : question → contexte plateforme ────────────────────
-export async function getContextePlateforme(question: string): Promise<string> {
+/**
+ * @param question      Question de l'utilisateur
+ * @param editionAnnee  Édition CREXE active (défaut : CREX_ANNEE). NULL = toutes.
+ */
+export async function getContextePlateforme(
+  question: string,
+  editionAnnee: number | null = CREX_ANNEE
+): Promise<string> {
   try {
-    const tousLesProjets = await getProjetsContexte()
+    const tousLesProjets = await getProjetsContexte(editionAnnee)
     const pertinents = filtrerProjetsParQuestion(tousLesProjets, question)
-    return formaterContextePlateforme(pertinents)
+    return formaterContextePlateforme(pertinents, editionAnnee)
   } catch (err) {
     console.warn('[Platform Context] Erreur:', err)
     return ''

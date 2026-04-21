@@ -116,3 +116,12 @@ select.input-field {
   display: inline-block;
   animation: spin 1s linear infinite;
 }
+
+/* ─── Carrousel hero — barre de progression ────────────────── */
+@keyframes carouselProgress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+.carousel-progress-bar {
+  animation: carouselProgress 4500ms linear forwards;
+}

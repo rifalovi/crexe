@@ -967,8 +967,8 @@ export default async function FicheProjetPage({ params }: { params: Promise<{ id
               Pays francophones dans lesquels des activités du projet sont déployées en {projet.annee_exercice}.
             </p>
             <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-              {pays.map((p) => (
-                <li key={p.pays_code ?? Math.random()}
+              {pays.map((p, idx) => (
+                <li key={p.pays_code ?? idx}
                   className="flex items-center gap-2 text-sm bg-white border border-gray-100 rounded-lg px-3 py-2 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
                   <span className="text-[10px] font-mono uppercase flex-shrink-0" style={{ color: accent }}>
                     {p.pays_code}

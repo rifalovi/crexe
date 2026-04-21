@@ -26,6 +26,9 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Tableau de bord', href: '/admin', icon: '◈' },
   { label: 'Projets', href: '/admin/projets', icon: '◉' },
   { label: 'Programmes stratégiques', href: '/admin/programmes', icon: '◆' },
+  { label: 'Éditions CREXE', href: '/admin/editions', icon: '◑', adminOnly: true },
+  { label: 'Résultats ERA', href: '/admin/era', icon: '📊' },
+  { label: 'Base de connaissance', href: '/admin/base-connaissance', icon: '◧' },
   { label: 'Utilisateurs', href: '/admin/utilisateurs', icon: '◎', adminOnly: true },
 ]
 
