@@ -360,14 +360,22 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
     setLoading(true)
     try {
       // Projet
+      // Concept : .maybeSingle() retourne null (pas d'erreur) si 0 ligne, contrairement
+      // à .single() qui lève une exception — plus robuste pour diagnostiquer les accès.
       const { data: p, error: pErr } = await supabase
         .from('projets')
         .select('*')
         .eq('id', projetId)
-        .single()
+        .maybeSingle()
 
-      if (pErr) throw new Error(pErr.message)
-      if (!p) throw new Error('Projet introuvable')
+      if (pErr) throw new Error(
+        `Erreur lecture projet [${pErr.code ?? '?'}] : ${pErr.message}. ` +
+        `Vérifiez que votre compte a bien le rôle admin dans la table profils.`
+      )
+      if (!p) throw new Error(
+        `Projet "${projetId}" introuvable ou accès refusé. ` +
+        `Assurez-vous que votre profil Supabase a role = 'admin' et actif = true.`
+      )
 
       setProjet({
         id: p.id ?? '',
@@ -592,7 +600,7 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
         updated_at: new Date().toISOString(),
       }).eq('id', projetId)
 
-      if (pErr) throw new Error(`Projet : ${pErr.message}`)
+      if (pErr) throw new Error(`Mise à jour projet [${pErr.code ?? '?'}] : ${pErr.message}`)
 
       // 2. Indicateurs — upsert ou suppression
       for (const ind of indicateurs) {
@@ -704,7 +712,6 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
         }
       }
 
-      // ─── Sauvegarde chaîne des résultats ──────────────────────────────
       const chainePayload = {
         projet_id:                    projetId,
         extrants_titre:               chaine.extrants_titre,
@@ -717,7 +724,12 @@ export default function EditProjetPage({ params }: { params: { id: string } }) {
         impact_items:                 chaine.impact_items.split('\n').map(s => s.trim()).filter(Boolean),
         activites_structurantes:      (() => { try { return JSON.parse(chaine.activites_structurantes) } catch { return [] } })(),
       }
-      await supabase.from('chaine_resultats').upsert(chainePayload, { onConflict: 'projet_id' })
+      // Sauvegarde chaîne des résultats — erreurs silencieuses si table non migrée
+      // Concept : on vérifie l'erreur sans la propager pour ne pas bloquer la sauvegarde globale
+      const { error: chaineErr } = await supabase
+        .from('chaine_resultats')
+        .upsert(chainePayload, { onConflict: 'projet_id' })
+      if (chaineErr) console.warn('[chaine_resultats] upsert non appliqué :', chaineErr.message)
 
       // ERA résultats
       try {
