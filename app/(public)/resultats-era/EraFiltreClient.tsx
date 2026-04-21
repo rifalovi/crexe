@@ -85,16 +85,11 @@ function BlocNiveau({ result }: { result: ResultatEra }) {
         </div>
       </div>
       <div className="space-y-2">
-        {paragraphes.slice(0, 4).map((p, i) => (
+        {paragraphes.map((p, i) => (
           <p key={i} className={`text-sm leading-relaxed ${i === 0 ? 'font-medium text-gray-800' : 'text-gray-600'}`}>
             {p}
           </p>
         ))}
-        {paragraphes.length > 4 && (
-          <p className="text-xs text-gray-400 italic mt-1">
-            + {paragraphes.length - 4} paragraphes supplémentaires…
-          </p>
-        )}
       </div>
     </div>
   )
