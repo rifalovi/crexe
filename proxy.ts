@@ -61,10 +61,10 @@ export async function proxy(request: NextRequest) {
 }
 
 // ─── Quelles routes passent par le middleware ? ──────────────────────────────
-// On exclut les fichiers statiques, images, et l'API pour ne pas alourdir
-// inutilement les requêtes sur les assets.
+// On exclut les fichiers statiques, images, fonts et favicon pour ne pas
+// alourdir le chargement des assets côté navigateur.
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?)$).*)',
   ],
 }
