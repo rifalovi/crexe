@@ -279,6 +279,131 @@ function Select({ value, onChange, options, className = '' }: {
   )
 }
 
+// ─── Thématiques prédéfinies ─────────────────────────────────────────────────
+const THEMATIQUES_OPTIONS = [
+  'Développement durable',
+  'Langue française et diversité culturelles',
+  'Paix, démocratie et droits de l\'homme',
+  'Transversalité',
+  'Économie et numérique',
+  'Éducation et formation',
+]
+
+// ─── Composant Thématiques — checkboxes ──────────────────────────────────────
+// Remplace la saisie libre par des cases à cocher prédéfinies.
+// Concept : stocke une chaîne "Thème1, Thème2" pour rétrocompatibilité.
+function ThematiquesCheckboxes({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const actives = value ? value.split(',').map(s => s.trim()).filter(Boolean) : []
+  const toggle = (theme: string) => {
+    const nouvellesActives = actives.includes(theme)
+      ? actives.filter(t => t !== theme)
+      : [...actives, theme]
+    onChange(nouvellesActives.join(', '))
+  }
+  return (
+    <div className="border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100">
+      {THEMATIQUES_OPTIONS.map(theme => {
+        const checked = actives.includes(theme)
+        return (
+          <label key={theme} className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition">
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={() => toggle(theme)}
+              className="w-4 h-4 rounded accent-[var(--oif-blue)] flex-shrink-0"
+            />
+            <span className={`text-sm ${checked ? 'font-semibold text-[var(--oif-blue)]' : 'text-gray-700'}`}>
+              {theme}
+            </span>
+          </label>
+        )
+      })}
+      {actives.filter(t => !THEMATIQUES_OPTIONS.includes(t)).map(custom => (
+        <label key={custom} className="flex items-center gap-3 px-4 py-3 cursor-pointer bg-amber-50">
+          <input type="checkbox" checked onChange={() => toggle(custom)} className="w-4 h-4 rounded accent-amber-500" />
+          <span className="text-sm text-amber-700">{custom} <span className="text-xs">(personnalisé)</span></span>
+        </label>
+      ))}
+    </div>
+  )
+}
+
+// ─── Composant ActivitesEditor — tableau visuel sans JSON ─────────────────────
+// Concept : l'utilisateur manipule des lignes visuelles {volume, action}.
+// En interne, on convertit vers/depuis JSON string pour la compatibilité.
+interface ActiviteItem { volume: string; action: string }
+
+function ActivitesEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  let items: ActiviteItem[] = []
+  try { items = JSON.parse(value) || [] } catch { items = [] }
+  if (!Array.isArray(items)) items = []
+
+  const emit = (newItems: ActiviteItem[]) => onChange(JSON.stringify(newItems, null, 2))
+
+  const update = (i: number, field: keyof ActiviteItem, val: string) => {
+    const next = items.map((it, idx) => idx === i ? { ...it, [field]: val } : it)
+    emit(next)
+  }
+
+  const add = () => emit([...items, { volume: '', action: '' }])
+  const remove = (i: number) => emit(items.filter((_, idx) => idx !== i))
+  const move = (i: number, dir: -1 | 1) => {
+    const next = [...items]
+    const j = i + dir
+    if (j < 0 || j >= next.length) return
+    ;[next[i], next[j]] = [next[j], next[i]]
+    emit(next)
+  }
+
+  return (
+    <div>
+      {items.length > 0 && (
+        <div className="border border-gray-200 rounded-xl overflow-hidden mb-3">
+          <div className="grid grid-cols-[120px_1fr_80px] text-xs font-semibold text-gray-500 uppercase tracking-wide px-4 py-2 bg-gray-50 border-b border-gray-200">
+            <span>Volume / Chiffre</span>
+            <span>Action / Description</span>
+            <span className="text-center">Ordre</span>
+          </div>
+          {items.map((item, i) => (
+            <div key={i} className="grid grid-cols-[120px_1fr_80px] items-center border-b border-gray-100 last:border-0">
+              <input
+                value={item.volume}
+                onChange={e => update(i, 'volume', e.target.value)}
+                placeholder="ex: 1 264"
+                className="px-3 py-2.5 text-sm border-r border-gray-100 focus:outline-none focus:bg-blue-50 font-mono font-bold text-[var(--oif-blue)]"
+              />
+              <input
+                value={item.action}
+                onChange={e => update(i, 'action', e.target.value)}
+                placeholder="Description de l'activité…"
+                className="px-3 py-2.5 text-sm focus:outline-none focus:bg-blue-50 w-full"
+              />
+              <div className="flex items-center justify-center gap-0.5 px-2">
+                <button onClick={() => move(i, -1)} disabled={i === 0} className="p-1 text-gray-300 hover:text-gray-600 disabled:opacity-20 transition text-xs">▲</button>
+                <button onClick={() => remove(i)} className="p-1 text-red-300 hover:text-red-500 transition text-xs">✕</button>
+                <button onClick={() => move(i, 1)} disabled={i === items.length - 1} className="p-1 text-gray-300 hover:text-gray-600 disabled:opacity-20 transition text-xs">▼</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {items.length === 0 && (
+        <div className="text-center py-6 text-sm text-gray-400 border border-dashed border-gray-200 rounded-xl mb-3">
+          Aucune activité structurante. Cliquez sur &quot;+ Ajouter une ligne&quot;.
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={add}
+        className="flex items-center gap-2 text-sm font-medium text-[var(--oif-blue)] hover:text-[var(--oif-blue-dark)] transition"
+      >
+        <span className="w-6 h-6 rounded-full bg-[var(--oif-blue)] text-white flex items-center justify-center text-xs">+</span>
+        Ajouter une ligne
+      </button>
+    </div>
+  )
+}
+
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 border-b border-gray-100 pb-2 mb-4">
@@ -1012,22 +1137,19 @@ export default function EditProjetPage({ params }: { params: Promise<{ id: strin
                   placeholder="Contexte, objectifs, méthodes, résultats…"
                 />
               </Field>
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Thématiques" hint="séparées par des virgules">
-                  <TextInput
-                    value={projet.thematiques}
-                    onChange={v => setProjet(p => ({ ...p, thematiques: v }))}
-                    placeholder="Éducation, Formation, Genre…"
-                  />
-                </Field>
-                <Field label="Mots-clés" hint="séparés par des virgules">
-                  <TextInput
-                    value={projet.mots_cles}
-                    onChange={v => setProjet(p => ({ ...p, mots_cles: v }))}
-                    placeholder="numérique, francophonie, ODD…"
-                  />
-                </Field>
-              </div>
+              <Field label="Thématiques" hint="cochez toutes celles qui s'appliquent">
+                <ThematiquesCheckboxes
+                  value={projet.thematiques}
+                  onChange={v => setProjet(p => ({ ...p, thematiques: v }))}
+                />
+              </Field>
+              <Field label="Mots-clés" hint="séparés par des virgules — pour la recherche interne">
+                <TextInput
+                  value={projet.mots_cles}
+                  onChange={v => setProjet(p => ({ ...p, mots_cles: v }))}
+                  placeholder="numérique, francophonie, ODD…"
+                />
+              </Field>
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Date de début">
                   <input
@@ -1385,14 +1507,20 @@ export default function EditProjetPage({ params }: { params: Promise<{ id: strin
                       />
                     </Field>
                   </div>
-                  <Field label="URL de la photo portrait" hint="chemin /images/temoignages/... ou URL externe">
-                    <TextInput
-                      value={tem.photo_url}
-                      onChange={v => upd(setTemoignages, idx, 'photo_url', v)}
-                      placeholder="/images/temoignages/a15_temoignage_valerie_1.jpg"
-                    />
-                  </Field>
                   <div className="grid grid-cols-2 gap-3">
+                    <Field label="Type de média">
+                      <Select
+                        value={tem.type_media}
+                        onChange={v => upd(setTemoignages, idx, 'type_media', v)}
+                        options={[
+                          { value: 'rapport',   label: 'Rapport' },
+                          { value: 'video',     label: '🎬 Vidéo YouTube / externe' },
+                          { value: 'article',   label: 'Article' },
+                          { value: 'interview', label: 'Interview' },
+                          { value: 'autre',     label: 'Autre' },
+                        ]}
+                      />
+                    </Field>
                     <Field label="Source">
                       <TextInput
                         value={tem.source}
@@ -1400,20 +1528,46 @@ export default function EditProjetPage({ params }: { params: Promise<{ id: strin
                         placeholder="ex: CREXE 2025 — rapport d'exécution"
                       />
                     </Field>
-                    <Field label="Type de média">
-                      <Select
-                        value={tem.type_media}
-                        onChange={v => upd(setTemoignages, idx, 'type_media', v)}
-                        options={[
-                          { value: 'rapport', label: 'Rapport' },
-                          { value: 'video', label: 'Vidéo' },
-                          { value: 'article', label: 'Article' },
-                          { value: 'interview', label: 'Interview' },
-                          { value: 'autre', label: 'Autre' },
-                        ]}
-                      />
-                    </Field>
                   </div>
+
+                  {/* Lien vidéo — affiché en priorité quand type = vidéo */}
+                  <Field
+                    label={tem.type_media === 'video' ? '🎬 Lien vidéo (YouTube, Vimeo…)' : 'URL source / lien externe'}
+                    hint={tem.type_media === 'video' ? 'https://youtube.com/watch?v=…' : 'Article, rapport en ligne…'}
+                  >
+                    <div className="space-y-1">
+                      <TextInput
+                        value={tem.source_url}
+                        onChange={v => upd(setTemoignages, idx, 'source_url', v)}
+                        placeholder={tem.type_media === 'video' ? 'https://www.youtube.com/watch?v=XXXXX' : 'https://…'}
+                      />
+                      {tem.type_media === 'video' && tem.source_url && tem.source_url.includes('youtube') && (
+                        <a href={tem.source_url} target="_blank" rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-red-600 hover:underline">
+                          ▶ Visionner la vidéo →
+                        </a>
+                      )}
+                    </div>
+                  </Field>
+
+                  {/* Photo portrait */}
+                  <Field label="Photo portrait" hint="URL externe ou chemin /images/temoignages/nom.jpg">
+                    <div className="flex gap-3 items-start">
+                      <div className="flex-1">
+                        <TextInput
+                          value={tem.photo_url}
+                          onChange={v => upd(setTemoignages, idx, 'photo_url', v)}
+                          placeholder="/images/temoignages/nom.jpg  ou  https://…"
+                        />
+                      </div>
+                      {tem.photo_url && (
+                        <div className="w-14 h-14 rounded-lg overflow-hidden border border-gray-200 flex-shrink-0 bg-gray-100">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={tem.photo_url} alt="Aperçu" className="w-full h-full object-cover" onError={e => (e.currentTarget.style.display='none')} />
+                        </div>
+                      )}
+                    </div>
+                  </Field>
                   <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -1732,19 +1886,17 @@ export default function EditProjetPage({ params }: { params: Promise<{ id: strin
             </Field>
           </div>
 
-          {/* Activités structurantes */}
+          {/* Activités structurantes — interface visuelle */}
           <div className="bg-white rounded-xl border border-gray-200 p-5">
             <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-1">
               Tableau des activités structurantes
             </h3>
             <p className="text-xs text-gray-400 mb-4">
-              Format JSON : <code className="bg-gray-100 px-1 rounded">[{'{'}&#34;volume&#34;: &#34;1 264&#34;, &#34;action&#34;: &#34;Actions de renforcement&#34;{'}'}]</code>
+              Chiffres-clés et actions réalisées — affichés dans la fiche publique du projet.
             </p>
-            <TextArea
+            <ActivitesEditor
               value={chaine.activites_structurantes}
               onChange={v => setChaine(c => ({ ...c, activites_structurantes: v }))}
-              rows={10}
-              placeholder={'[\n  {"volume": "1 264", "action": "Actions de renforcement des capacités"},\n  {"volume": "9 475", "action": "Femmes ayant obtenu un accès direct à une AGR"}\n]'}
             />
           </div>
         </div>
