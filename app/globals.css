@@ -6,14 +6,24 @@
 
 /* ─── Palette OIF ─────────────────────────────────────────── */
 :root {
-  /* Couleurs institutionnelles */
-  --oif-blue:        #003DA5;   /* institutionnel, chiffres factuels */
+  /* Couleurs institutionnelles CREXE */
+  --oif-blue:        #003DA5;   /* PS1 — institutionnel, chiffres factuels */
   --oif-blue-dark:   #042C53;   /* texte sur fond clair */
   --oif-purple:      #6B2C91;   /* PS2 — démocratie et gouvernance */
   --oif-green:       #0F6E56;   /* PS3 — développement durable */
   --oif-gold:        #D4A017;   /* chiffres-chocs, accents */
   --oif-cream:       #FAF7F0;   /* fond doux pour sections éditoriales */
   --oif-neutral:     #F0F4FA;   /* surfaces secondaires */
+
+  /* Couleurs logotype OIF officiel (source : charte graphique p.8, éd. 2007) */
+  /* Ces valeurs sont VERROUILLÉES — voir docs/branding.md */
+  --oif-logo-gris:      #2E292D;   /* Pantone Cool Gray 11 C — texte logotype */
+  --oif-logo-jaune:     #FDCD00;   /* Pantone 116 C — globe secteur principal */
+  --oif-logo-vert:      #7EB301;   /* Pantone 376 C — globe végétation */
+  --oif-logo-violet:    #5D0073;   /* Pantone 2603 C — globe secteur supérieur */
+  --oif-logo-rouge:     #E40001;   /* Pantone 485 C — globe secteur gauche */
+  --oif-logo-bleu-cyan: #0198E9;   /* Pantone Process Cyan C — globe océan */
+  --oif-logo-gris-clair:#DFDCD8;   /* Pantone Warm Gray 1 C — autres éditions */
 
   /* Base */
   --background:      #ffffff;
@@ -39,6 +49,15 @@
   --color-border:             var(--border);
   --color-muted:              var(--muted);
   --color-muted-foreground:   var(--muted-foreground);
+
+  /* Couleurs logotype OIF — utilisables en Tailwind : bg-oif-logo-jaune, text-oif-logo-violet… */
+  --color-oif-logo-gris:      var(--oif-logo-gris);
+  --color-oif-logo-jaune:     var(--oif-logo-jaune);
+  --color-oif-logo-vert:      var(--oif-logo-vert);
+  --color-oif-logo-violet:    var(--oif-logo-violet);
+  --color-oif-logo-rouge:     var(--oif-logo-rouge);
+  --color-oif-logo-bleu-cyan: var(--oif-logo-bleu-cyan);
+  --color-oif-logo-gris-clair:var(--oif-logo-gris-clair);
 }
 
 /* ─── Typographie ─────────────────────────────────────────── */
