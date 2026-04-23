@@ -118,9 +118,17 @@ export default function LoginPage() {
           </Suspense>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
-          Organisation internationale de la Francophonie — CREXE 2025
-        </p>
+        <div className="text-center mt-6 space-y-2">
+          <p className="text-xs text-gray-400">
+            Organisation internationale de la Francophonie · CREXE
+          </p>
+          <p className="text-xs text-gray-400">
+            Pas encore de compte ?{' '}
+            <a href="/demande-acces" className="text-[var(--oif-blue)] hover:underline font-medium">
+              Demander l&apos;accès →
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   )

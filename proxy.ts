@@ -45,16 +45,30 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
 
-  // ─── Redirection si non authentifié sur les routes admin ─────────────────
-  if (pathname.startsWith('/admin') && !user) {
+  // ─── Routes publiques (accessibles sans connexion) ────────────────────────
+  // Seules ces routes restent accessibles sans authentification :
+  //  - /login           → page de connexion
+  //  - /demande-acces   → formulaire de demande d'activation de compte
+  //  - /api/edition     → cookie d'édition (lecture seule)
+  //  - /api/contact     → formulaire de contact public
+  const PUBLIC_PATHS = ['/login', '/demande-acces']
+  const isPublicPath = PUBLIC_PATHS.some(p => pathname.startsWith(p))
+    || pathname.startsWith('/api/edition')
+    || pathname.startsWith('/api/contact')
+
+  // ─── Redirection si non authentifié ──────────────────────────────────────
+  // TOUTES les routes (publiques + admin) nécessitent maintenant une connexion.
+  // L'exception : les chemins publics listés ci-dessus.
+  if (!user && !isPublicPath) {
     const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('redirect', pathname) // on mémorise la destination
+    loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
   // ─── Redirection si déjà connecté et visite /login ────────────────────────
   if (pathname === '/login' && user) {
-    return NextResponse.redirect(new URL('/admin', request.url))
+    const redirect = request.nextUrl.searchParams.get('redirect')
+    return NextResponse.redirect(new URL(redirect ?? '/', request.url))
   }
 
   return supabaseResponse

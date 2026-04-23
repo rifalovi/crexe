@@ -224,6 +224,90 @@ export async function reinitialiserMotDePasse(userId: string, nouveauMdp: string
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// DEMANDES D'ACCÈS — Validation des comptes @francophonie.org
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Concept : approuverDemande utilise supabase.auth.admin.generateLink() pour créer
+// un lien d'invitation. L'utilisateur clique ce lien → définit son mot de passe.
+// C'est plus sécurisé que de créer un mot de passe temporaire côté serveur.
+
+export async function approuverDemande(demandeId: string) {
+  const adminUser = await verifierAdmin()
+  const admin = createAdminClient()
+
+  // Lire la demande
+  const { data: demande, error: fetchErr } = await admin
+    .from('demandes_acces')
+    .select('email, nom_complet, poste')
+    .eq('id', demandeId)
+    .eq('statut', 'en_attente')
+    .single()
+
+  if (fetchErr || !demande) throw new Error('Demande introuvable ou déjà traitée')
+
+  // Créer le compte Supabase Auth + envoyer l'invitation
+  const { data: inviteData, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(
+    demande.email,
+    {
+      data: { nom_complet: demande.nom_complet },
+      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'}/login`,
+    }
+  )
+
+  if (inviteErr) throw new Error(`Invitation impossible : ${inviteErr.message}`)
+
+  const userId = inviteData.user?.id
+
+  // Créer/mettre à jour le profil
+  if (userId) {
+    await admin.from('profils').upsert({
+      id:          userId,
+      email:       demande.email,
+      nom_complet: demande.nom_complet,
+      poste:       demande.poste,
+      organisation: 'OIF',
+      role:        'lecteur',
+      actif:       true,
+    }, { onConflict: 'id' })
+  }
+
+  // Marquer la demande comme approuvée
+  const { error: updErr } = await admin
+    .from('demandes_acces')
+    .update({
+      statut:     'approuve',
+      traite_par: adminUser.id,
+      traite_le:  new Date().toISOString(),
+    })
+    .eq('id', demandeId)
+
+  if (updErr) throw new Error(`Mise à jour impossible : ${updErr.message}`)
+
+  revalidatePath('/admin/demandes')
+  return { ok: true }
+}
+
+export async function rejeterDemande(demandeId: string, notes?: string) {
+  const adminUser = await verifierAdmin()
+  const admin = createAdminClient()
+
+  const { error } = await admin
+    .from('demandes_acces')
+    .update({
+      statut:     'rejete',
+      traite_par: adminUser.id,
+      traite_le:  new Date().toISOString(),
+      notes_admin: notes || null,
+    })
+    .eq('id', demandeId)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/admin/demandes')
+  return { ok: true }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // PROJETS
 // ═══════════════════════════════════════════════════════════════════════════════
 

@@ -28,6 +28,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: 'Import IA',           href: '/admin/import',               icon: '✦' },
   { label: 'Résultats ERA',        href: '/admin/era',                 icon: '📊' },
   { label: 'Base de connaissance', href: '/admin/base-connaissance',   icon: '◧' },
+  { label: 'Demandes d\'accès',   href: '/admin/demandes',             icon: '🔑', adminOnly: true },
   { label: 'Utilisateurs',        href: '/admin/utilisateurs',         icon: '◎', adminOnly: true },
   { label: 'Paramètres',          href: '/admin/parametres',           icon: '⚙️', adminOnly: true },
 ]
