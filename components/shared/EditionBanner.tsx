@@ -51,19 +51,13 @@ export default function EditionBanner({ editions, editionActive }: EditionBanner
   const editionsAffichees = editions.filter(e => e.nbProjets > 0)
 
   return (
-    <section className="bg-[var(--oif-blue-dark)] border-t border-white/10 pb-14 px-6">
+    <section className="bg-[var(--oif-navy)]/95 border-t border-white/10 pb-6 px-6">
       <div className="max-w-7xl mx-auto">
 
-        {/* Titre de la sélection */}
-        <div className="text-center pt-10 pb-8">
-          <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-2">
-            Étape 1
-          </p>
-          <h2 className="font-editorial text-2xl md:text-3xl font-semibold text-white mb-2">
-            Quelle édition souhaitez-vous explorer ?
-          </h2>
-          <p className="text-white/50 text-sm">
-            Sélectionnez une édition pour accéder à ses projets, données et analyses
+        {/* Titre compact — réduit au minimum */}
+        <div className="text-center pt-5 pb-4">
+          <p className="text-white/70 text-sm font-medium">
+            Sélectionnez une édition CREXE
           </p>
         </div>
 
@@ -153,15 +147,8 @@ export default function EditionBanner({ editions, editionActive }: EditionBanner
           })}
         </div>
 
-        {/* Flèche vers le contenu */}
-        <div className="flex justify-center mt-8">
-          <div className="flex flex-col items-center gap-1 text-white/30">
-            <p className="text-xs">Données de l&apos;édition {editionActive}</p>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-bounce">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-        </div>
+        {/* Trait de séparation discret */}
+        <div className="border-t border-white/10 mt-4" />
 
       </div>
     </section>

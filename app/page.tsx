@@ -246,36 +246,10 @@ export default async function HomePage() {
           tout texte. Le carrousel tourne automatiquement toutes les 4,5 s. */}
       <HeroCarousel />
 
-      {/* ─── Hero titre + Sélecteur d'édition ──────────────────────────── */}
-      {/* Concept UX : l'utilisateur choisit son édition DANS le hero,
-          avant de voir les données. La sélection est l'action principale.
-          Les projets et programmes apparaissent en dessous, filtrés. */}
-      <section
-        className="bg-[var(--oif-blue-dark)] text-white"
-        style={{ backgroundImage: 'radial-gradient(ellipse at 70% 10%, rgba(0,61,165,0.4) 0%, transparent 60%)' }}
-      >
-        <div className="max-w-7xl mx-auto px-6 pt-14 pb-4">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/80 text-xs font-medium px-3 py-1.5 rounded-full mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--oif-gold)]" />
-            Organisation internationale de la Francophonie
-          </div>
-
-          <h1 className="font-editorial text-4xl md:text-5xl font-semibold leading-tight max-w-3xl mb-3">
-            Compte rendu d&apos;exécution des actions{' '}
-            <span className="text-[var(--oif-gold)]">de l&apos;OIF</span>
-          </h1>
-
-          <p className="text-white/50 text-base max-w-xl leading-relaxed mb-10">
-            Chiffres sourcés, récits de terrain et visualisations interactives —
-            pour chaque édition du CREXE.
-          </p>
-        </div>
-
-        {/* Sélecteur d'édition — intégré dans le hero, avant tout contenu */}
-        {editionStats.length > 0 && (
-          <EditionBanner editions={editionStats} editionActive={editionActive} />
-        )}
-      </section>
+      {/* ─── Sélecteur d'édition — compact, non agressif ────────────────── */}
+      {editionStats.length > 0 && (
+        <EditionBanner editions={editionStats} editionActive={editionActive} />
+      )}
 
       {/* ─── Statistiques de l'édition active ───────────────────────── */}
       <section className="bg-white border-b border-gray-100">

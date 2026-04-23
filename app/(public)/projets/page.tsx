@@ -8,8 +8,10 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+import { COOKIE_EDITION, CREX_ANNEE } from '@/lib/edition-context'
 
 export const metadata: Metadata = {
   title: 'Projets OIF — Plateforme CREXE',
@@ -53,13 +55,27 @@ function formatBudget(v: number | null): string | null {
   return `${v} €`
 }
 
-async function getData(psFilter: string | null) {
+async function getEditionActive(): Promise<number> {
+  try {
+    const cookieStore = await cookies()
+    const val = cookieStore.get(COOKIE_EDITION)?.value
+    if (val) {
+      const parsed = parseInt(val, 10)
+      if (!isNaN(parsed) && parsed >= 2024) return parsed
+    }
+  } catch { /* hors contexte request */ }
+  return CREX_ANNEE
+}
+
+async function getData(psFilter: string | null, editionAnnee: number) {
   const supabase = await createClient()
 
+  // ⚠️ Filtre par annee_exercice — critique pour séparer CREXE 2024 / 2025
   const projetsQuery = supabase
     .from('projets')
     .select('id, code_officiel, nom, accroche, ps_id, taux_execution, budget_engage, nombre_pays')
     .eq('statut', 'publie')
+    .eq('annee_exercice', editionAnnee)
     .order('id')
 
   if (psFilter) projetsQuery.eq('ps_id', psFilter)
@@ -195,7 +211,8 @@ export default async function ProjetsListePage({
   const psParam = sp.ps ?? null
   const psFilter = psParam && ['PS1', 'PS2', 'PS3'].includes(psParam) ? psParam : null
 
-  const { programmes, projets } = await getData(psFilter)
+  const editionAnnee = await getEditionActive()
+  const { programmes, projets } = await getData(psFilter, editionAnnee)
 
   // Nom court du PS filtré, pour l'affichage du titre.
   const psFiltered = psFilter
