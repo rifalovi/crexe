@@ -17,20 +17,20 @@ export { CREX_ANNEE }
 export async function NavOIF() {
   const anneeActive = await getEditionActive()
   return (
-    <nav className="bg-[var(--oif-blue-dark)] border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <nav className="bg-[var(--oif-navy)] border-b border-white/10">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
 
-        {/* Logo OIF + identité CREX */}
+        {/* Logo OIF officiel + identité CREX */}
+        {/* Conforme charte OIF — version quadri texte blanc sur fond sombre */}
         <Link href="/" className="flex items-center gap-4 group">
-          {/* Logo OIF officiel — agrandi pour une meilleure lisibilité */}
           <div className="flex-shrink-0 border-r border-white/20 pr-4">
             <Image
-              src="/images/logo-oif.svg"
-              alt="Organisation internationale de la Francophonie"
-              width={96}
-              height={50}
-              className="brightness-0 invert opacity-95 group-hover:opacity-100 transition"
-              style={{ minWidth: 96 }}
+              src="/assets/branding/oif/logo-oif-quadri-texte-blanc.png"
+              alt="Logo officiel de l'Organisation internationale de la Francophonie"
+              width={110}
+              height={52}
+              className="opacity-95 group-hover:opacity-100 transition"
+              style={{ minWidth: 96, height: 'auto' }}
               priority
             />
           </div>

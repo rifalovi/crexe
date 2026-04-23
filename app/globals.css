@@ -6,11 +6,14 @@
 
 /* ─── Palette OIF ─────────────────────────────────────────── */
 :root {
-  /* Couleurs institutionnelles CREXE */
-  --oif-blue:        #003DA5;   /* PS1 — institutionnel, chiffres factuels */
-  --oif-blue-dark:   #042C53;   /* texte sur fond clair */
-  --oif-purple:      #6B2C91;   /* PS2 — démocratie et gouvernance */
-  --oif-green:       #0F6E56;   /* PS3 — développement durable */
+  /* Couleurs Programmes Stratégiques — SOURCE OFFICIELLE : Code_couleur_programmation_OIF.pdf */
+  --oif-blue:        #0198E9;   /* PS1 — Pantone Process Cyan C · bleu cyan officiel */
+  --oif-blue-dark:   #0072B0;   /* PS1 foncé — pour hover et texte sur fond clair */
+  --oif-purple:      #5D0073;   /* PS2 — Pantone 2603 C · violet officiel */
+  --oif-green:       #7EB301;   /* PS3 — Pantone 376 C · vert officiel */
+
+  /* Couleur de navigation institutionnelle (fond dark de la nav, sidebar, footer) */
+  --oif-navy:        #042C53;   /* bleu marine institutionnel — texte et fonds sombres */
   --oif-gold:        #D4A017;   /* chiffres-chocs, accents */
   --oif-cream:       #FAF7F0;   /* fond doux pour sections éditoriales */
   --oif-neutral:     #F0F4FA;   /* surfaces secondaires */
@@ -46,6 +49,7 @@
   --color-oif-gold:           var(--oif-gold);
   --color-oif-cream:          var(--oif-cream);
   --color-oif-neutral:        var(--oif-neutral);
+  --color-oif-navy:           var(--oif-navy);
   --color-border:             var(--border);
   --color-muted:              var(--muted);
   --color-muted-foreground:   var(--muted-foreground);

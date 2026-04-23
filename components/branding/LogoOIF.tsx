@@ -21,12 +21,15 @@ import Image from 'next/image'
 export type LogoVariant = 'quadri' | 'quadri-texte-blanc' | 'noir' | 'blanc'
 export type LogoSize    = 'sm' | 'md' | 'lg' | 'xl' | number
 
-// ─── Mapping variante → fichier SVG ──────────────────────────────────────────
+// ─── Mapping variante → fichier image ────────────────────────────────────────
+// Sources officielles : PNG fournis par le Service Communication OIF
+// Conversion EPS → SVG disponible via : inkscape --export-type=svg Logo_OIF_quadri.eps
+// (Inkscape requis localement — voir docs/branding/convert-eps-to-svg.sh)
 const LOGO_SOURCES: Record<LogoVariant, string> = {
-  'quadri':             '/assets/branding/oif/logo-oif-quadri.svg',
-  'quadri-texte-blanc': '/assets/branding/oif/logo-oif-quadri-texte-blanc.svg',
-  'noir':               '/assets/branding/oif/logo-oif-noir.svg',
-  'blanc':              '/assets/branding/oif/logo-oif-blanc.svg',
+  'quadri':             '/assets/branding/oif/logo-oif-quadri.png',
+  'quadri-texte-blanc': '/assets/branding/oif/logo-oif-quadri-texte-blanc.png',
+  'noir':               '/assets/branding/oif/logo-oif-noir.png',
+  'blanc':              '/assets/branding/oif/logo-oif-blanc.png',
 }
 
 // ─── Mapping taille → largeur en px ──────────────────────────────────────────
@@ -67,9 +70,9 @@ export default function LogoOIF({
   // Calcul de la largeur
   const width  = typeof size === 'number' ? size : LOGO_WIDTHS[size]
 
-  // Rapport d'aspect du logo OIF : environ 3.5:1 (largeur / hauteur)
-  // Valeur précise à ajuster après conversion EPS → SVG officielle
-  const height = Math.round(width / 3.5)
+  // Rapport d'aspect officiel du logo OIF : ~2:1 (source : PNG fourni par l'OIF — 881×438 px)
+  // Variante quadri : ratio 2.01 · Variante noir : ratio 2.35 (plus condensé avec le texte)
+  const height = Math.round(width / 2.1)
 
   // Espace protégé = ~7% de la largeur (équivalent hauteur du "L")
   const padding = withProtectedSpace ? Math.round(width * 0.07) : 0
