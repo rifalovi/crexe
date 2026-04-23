@@ -46,11 +46,29 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// GET /api/edition — retourne l'édition active courante
-export async function GET() {
+// GET /api/edition — deux usages :
+//   1. Sans params : retourne l'édition active (JSON)
+//   2. Avec ?annee=2025&redirect=/admin : change l'édition et redirige (dashboard switcher)
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = req.nextUrl
+    const anneeParam = searchParams.get('annee')
+    const redirectTo = searchParams.get('redirect')
+
+    if (anneeParam && redirectTo) {
+      const annee = parseInt(anneeParam, 10)
+      if (!EDITIONS_VALIDES.includes(annee)) {
+        return NextResponse.json({ error: 'Édition invalide' }, { status: 400 })
+      }
+      const cookieStore = await cookies()
+      cookieStore.set(COOKIE_EDITION, String(annee), {
+        httpOnly: false, sameSite: 'lax', path: '/', maxAge: 60 * 60 * 24 * 7,
+      })
+      return NextResponse.redirect(new URL(redirectTo, req.url))
+    }
+
     const cookieStore = await cookies()
-    const val = cookieStore.get(COOKIE_EDITION)?.value
+    const val  = cookieStore.get(COOKIE_EDITION)?.value
     const annee = val ? parseInt(val, 10) : CREX_ANNEE
     return NextResponse.json({ edition: isNaN(annee) ? CREX_ANNEE : annee })
   } catch {

@@ -99,11 +99,28 @@ export default async function AdminDashboard() {
   return (
     <div className="p-8 max-w-7xl mx-auto space-y-8">
 
-      {/* ── En-tête ────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between">
+      {/* ── En-tête + sélecteur d'édition ─────────────────────────────────── */}
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-[var(--oif-blue-dark)]">Tableau de bord</h1>
-          <p className="text-gray-400 mt-1 text-sm">CREXE {edition} — {stats.nbProjets} projets chargés</p>
+          <p className="text-gray-400 mt-1 text-sm">{stats.nbProjets} projets chargés</p>
+        </div>
+        {/* Sélecteur d'édition rapide — recharge la page avec l'édition choisie via le cookie global */}
+        <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
+          <span className="text-xs text-gray-500 pl-2 font-medium">Édition :</span>
+          {[2024, 2025, 2026].map(yr => (
+            <Link
+              key={yr}
+              href={`/api/edition?annee=${yr}&redirect=/admin`}
+              className={`px-3 py-1.5 rounded-lg text-sm font-semibold transition ${
+                edition === yr
+                  ? 'bg-[var(--oif-blue)] text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-white'
+              }`}
+            >
+              CREXE {yr}
+            </Link>
+          ))}
         </div>
         <div className="flex items-center gap-3">
           <Link href="/admin/editions"
