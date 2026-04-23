@@ -11,7 +11,8 @@ import Link from 'next/link'
 import { cookies } from 'next/headers'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
-import { COOKIE_EDITION, CREX_ANNEE } from '@/lib/edition-context'
+import { COOKIE_EDITION } from '@/lib/edition-context'
+import { CREX_ANNEE } from '@/lib/constants'
 
 export const metadata: Metadata = {
   title: 'Projets OIF — Plateforme CREXE',
