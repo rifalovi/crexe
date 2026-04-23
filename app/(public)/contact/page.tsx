@@ -46,15 +46,15 @@ export default function ContactPage() {
     <div className="flex flex-col min-h-screen">
 
       {/* ─── En-tête de page ────────────────────────────────────────────── */}
-      <section className="bg-[var(--oif-blue-dark)] text-white py-14">
+      <section className="bg-white border-b border-gray-100 py-8">
         <div className="max-w-7xl mx-auto px-6">
-          <p className="text-xs font-semibold text-[var(--oif-gold)] uppercase tracking-widest mb-3">
+          <p className="text-xs font-semibold text-[var(--oif-blue)] uppercase tracking-widest mb-2">
             Contact
           </p>
-          <h1 className="font-editorial text-3xl md:text-4xl font-semibold mb-3">
+          <h1 className="font-editorial text-2xl md:text-3xl font-semibold text-[var(--oif-navy)] mb-2">
             Nous contacter
           </h1>
-          <p className="text-white/60 max-w-xl text-sm leading-relaxed">
+          <p className="text-gray-500 max-w-xl text-sm leading-relaxed">
             Pour toute question relative à la plateforme CREXE {CREX_ANNEE}, aux données
             présentées ou à la méthodologie, l&apos;équipe {SERVICE_NOM} est à votre disposition.
           </p>

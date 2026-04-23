@@ -69,20 +69,20 @@ export default async function ResultatsEraPage() {
     <div className="min-h-screen bg-[var(--oif-neutral)]">
 
       {/* ─── Hero ─────────────────────────────────────────────────────────── */}
-      <div className="bg-[var(--oif-blue-dark)] text-white">
-        <div className="max-w-7xl mx-auto px-6 pt-10 pb-12">
-          <Link href="/" className="inline-flex items-center gap-2 text-white/50 hover:text-white text-xs mb-6 transition">
+      <div className="bg-white border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 pt-6 pb-6">
+          <Link href="/" className="inline-flex items-center gap-2 text-gray-400 hover:text-[var(--oif-blue)] text-xs mb-4 transition">
             ← Accueil
           </Link>
 
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/80 text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-full mb-5">
+          <div className="inline-flex items-center gap-2 bg-[var(--oif-blue)]/10 text-[var(--oif-blue)] text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-full mb-3">
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--oif-gold)] animate-pulse" />
             Enquête Rapide Annuelle · CREXE 2024
           </div>
-          <h1 className="font-editorial text-3xl md:text-4xl font-semibold mb-3">
+          <h1 className="font-editorial text-2xl md:text-3xl font-semibold text-[var(--oif-navy)] mb-2">
             Résultats de l&apos;ERA 2024
           </h1>
-          <p className="text-white/60 max-w-2xl text-sm leading-relaxed mb-10">
+          <p className="text-gray-500 max-w-2xl text-sm leading-relaxed mb-6">
             Effets mesurés auprès des bénéficiaires directs des projets OIF — PS1, PS2, PS3.
             Source : Rapport d&apos;enquête ERA 2024, OIF (août 2025).
           </p>
@@ -96,11 +96,11 @@ export default async function ResultatsEraPage() {
                 { val: '75–100%', label: 'acquisition compétences', sub: 'tous projets confondus', icon: '🎓' },
                 { val: '9 706', label: 'femmes en AGR', sub: 'Fonds Francophonie avec Elles', icon: '👩‍🌾' },
               ].map(({ val, label, sub, icon }) => (
-                <div key={label} className="bg-white/8 border border-white/15 rounded-2xl p-4 text-center backdrop-blur-sm">
+                <div key={label} className="bg-[var(--oif-neutral)] border border-gray-100 rounded-2xl p-4 text-center">
                   <div className="text-2xl mb-2">{icon}</div>
-                  <p className="text-xl md:text-2xl font-black text-[var(--oif-gold)] leading-tight">{val}</p>
-                  <p className="text-white/80 text-xs font-semibold mt-1">{label}</p>
-                  <p className="text-white/40 text-[10px] mt-0.5 leading-tight">{sub}</p>
+                  <p className="text-xl md:text-2xl font-black text-[var(--oif-blue)] leading-tight">{val}</p>
+                  <p className="text-gray-700 text-xs font-semibold mt-1">{label}</p>
+                  <p className="text-gray-400 text-[10px] mt-0.5 leading-tight">{sub}</p>
                 </div>
               ))}
             </div>

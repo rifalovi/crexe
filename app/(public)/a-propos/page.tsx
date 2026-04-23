@@ -153,29 +153,21 @@ export default function AProposPage() {
       {/* Navigation fournie par le layout (public)/layout.tsx — ne pas dupliquer */}
 
       {/* ─── Hero ────────────────────────────────────────────────────── */}
-      <section className="bg-[var(--oif-blue-dark)] text-white" style={{
-        backgroundImage: 'radial-gradient(ellipse at 80% 20%, rgba(0,61,165,0.3) 0%, transparent 60%)',
-      }}>
-        <div className="max-w-7xl mx-auto px-6 pt-16 pb-14">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white/80 text-xs font-medium px-3 py-1.5 rounded-full mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--oif-gold)]" />
-            Organisation internationale de la Francophonie · SCS
+      <section className="bg-white border-b border-gray-100 py-8">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
+            <Link href="/" className="hover:text-[var(--oif-blue)] transition">Accueil</Link>
+            <span>›</span>
+            <span>Méthodologie</span>
           </div>
-          <h1 className="font-editorial text-4xl md:text-5xl font-semibold leading-tight max-w-3xl mb-5">
-            Méthodologie{' '}
-            <span className="text-[var(--oif-gold)]">& sources</span>
+          <h1 className="font-editorial text-2xl md:text-3xl font-semibold text-[var(--oif-navy)] mb-2">
+            Méthodologie <span className="text-[var(--oif-blue)]">&amp; sources</span>
           </h1>
-          <p className="text-white/60 text-lg max-w-2xl leading-relaxed">
+          <p className="text-gray-500 text-sm max-w-2xl leading-relaxed">
             Le CREXE {CREX_ANNEE} repose sur une démarche de gestion axée sur les résultats (GAR),
             consolidée par une enquête qualitative auprès des bénéficiaires —
             l&apos;Enquête Rapide Annuelle (ERA).
           </p>
-          {/* Fil d'Ariane */}
-          <div className="flex items-center gap-2 mt-8 text-xs text-white/40">
-            <Link href="/" className="hover:text-white/70 transition">Accueil</Link>
-            <span>›</span>
-            <span className="text-white/70">Méthodologie</span>
-          </div>
         </div>
       </section>
 
