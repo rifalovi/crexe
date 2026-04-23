@@ -61,8 +61,40 @@ function estHorsPerimetre(question: string): boolean {
   return MOTS_HORS_PERIMETRE.some(mot => q.includes(mot))
 }
 
+// ─── Rate limiting en mémoire (sans base de données) ─────────────────────────
+// Concept : on garde un Map en mémoire Node.js avec l'IP comme clé.
+// En serverless (Netlify), chaque instance a son propre Map — c'est donc
+// une protection par instance, pas globale. Suffisant pour bloquer le spam simple.
+// Pour une protection globale, utiliser Upstash Redis ou le table rate_limit_chatbot.
+const RATE_MAP = new Map<string, { count: number; reset: number }>()
+const RATE_LIMIT  = 30   // requêtes max
+const RATE_WINDOW = 60 * 60 * 1000  // fenêtre de 1 heure (ms)
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = RATE_MAP.get(ip)
+  if (!entry || now > entry.reset) {
+    RATE_MAP.set(ip, { count: 1, reset: now + RATE_WINDOW })
+    return true // OK
+  }
+  if (entry.count >= RATE_LIMIT) return false // bloqué
+  entry.count++
+  return true
+}
+
 // ─── Handler principal ────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
+  // ── Rate limiting par IP ─────────────────────────────────────────────────
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+           ?? req.headers.get('x-real-ip')
+           ?? 'unknown'
+  if (!checkRateLimit(ip)) {
+    return Response.json(
+      { error: 'Trop de requêtes. Réessayez dans une heure.' },
+      { status: 429, headers: { 'Retry-After': '3600' } }
+    )
+  }
+
   try {
     const body = await req.json() as ChatRequest
     const { question, projetId, historique = [], editionAnnee } = body

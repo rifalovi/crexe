@@ -207,7 +207,7 @@ export default function ImportPage() {
               <select
                 value={projetCible}
                 onChange={e => setProjetCible(e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003DA5]/20"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/20"
               >
                 <option value="">— Sélectionner un projet —</option>
                 {projets.map(p => (
@@ -220,7 +220,7 @@ export default function ImportPage() {
               <button
                 onClick={() => appliquerSurProjet(imported)}
                 disabled={applying}
-                className="mt-3 w-full py-2.5 text-sm font-semibold text-white bg-[#003DA5] hover:bg-[#042C53] rounded-xl transition disabled:opacity-50"
+                className="mt-3 w-full py-2.5 text-sm font-semibold text-white bg-[var(--oif-blue)] hover:bg-[var(--oif-blue-dark)] rounded-xl transition disabled:opacity-50"
               >
                 {applying ? '⏳ Application…' : `✓ Appliquer sur ${projetCible}`}
               </button>
@@ -235,15 +235,15 @@ export default function ImportPage() {
               </p>
               <button
                 onClick={() => creerNouveauProjet(imported)}
-                className="w-full py-2.5 text-sm font-semibold text-[#003DA5] border-2 border-[#003DA5]/20 hover:bg-[#003DA5]/5 rounded-xl transition"
+                className="w-full py-2.5 text-sm font-semibold text-[var(--oif-blue)] border-2 border-[var(--oif-blue)]/20 hover:bg-[var(--oif-blue)]/5 rounded-xl transition"
               >
                 + Créer une nouvelle fiche projet
               </button>
             </div>
           )}
 
-          <div className="bg-[#003DA5]/5 rounded-2xl p-4">
-            <p className="text-xs font-semibold text-[#003DA5] mb-2">💡 Conseils</p>
+          <div className="bg-[var(--oif-blue)]/5 rounded-2xl p-4">
+            <p className="text-xs font-semibold text-[var(--oif-blue)] mb-2">💡 Conseils</p>
             <ul className="text-xs text-gray-600 space-y-1">
               <li>• Préférez le format DOCX pour une meilleure extraction</li>
               <li>• Les PDF textuels fonctionnent — les scans non</li>

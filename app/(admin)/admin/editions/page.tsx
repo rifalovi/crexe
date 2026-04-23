@@ -152,7 +152,7 @@ export default function EditionsPage() {
         </div>
         <button
           onClick={() => setShowNew(v => !v)}
-          className="flex items-center gap-2 bg-[#003DA5] text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-[#042C53] transition"
+          className="flex items-center gap-2 bg-[var(--oif-blue)] text-white text-sm font-semibold px-4 py-2.5 rounded-xl hover:bg-[var(--oif-blue-dark)] transition"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -177,7 +177,7 @@ export default function EditionsPage() {
 
       {/* ─── Formulaire nouvelle édition ─────────────────────────────────── */}
       {showNew && (
-        <div className="mb-6 bg-white border border-[#003DA5]/20 rounded-2xl p-6">
+        <div className="mb-6 bg-white border border-[var(--oif-blue)]/20 rounded-2xl p-6">
           <h3 className="font-semibold text-[#042C53] mb-4">Créer une nouvelle édition</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
             <div>
@@ -187,7 +187,7 @@ export default function EditionsPage() {
               <input
                 type="number" value={newAnnee} onChange={e => setNewAnnee(e.target.value)}
                 placeholder="2026" min="2020" max="2040"
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003DA5]/30"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/30"
               />
             </div>
             <div className="sm:col-span-2">
@@ -195,7 +195,7 @@ export default function EditionsPage() {
               <input
                 type="text" value={newLibelle} onChange={e => setNewLibelle(e.target.value)}
                 placeholder={`CREXE ${newAnnee || '2026'}`}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003DA5]/30"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/30"
               />
             </div>
           </div>
@@ -204,12 +204,12 @@ export default function EditionsPage() {
             <input
               type="text" value={newDesc} onChange={e => setNewDesc(e.target.value)}
               placeholder="Description de cette édition…"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003DA5]/30"
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/30"
             />
           </div>
           <div className="flex gap-3">
             <button onClick={handleCreer} disabled={!!saving}
-              className="bg-[#003DA5] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[#042C53] transition disabled:opacity-50">
+              className="bg-[var(--oif-blue)] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[var(--oif-blue-dark)] transition disabled:opacity-50">
               {saving ? '⏳ Création…' : 'Créer l\'édition'}
             </button>
             <button onClick={() => setShowNew(false)}
@@ -234,7 +234,7 @@ export default function EditionsPage() {
           {editions.length === 0 ? (
             <div className="text-center py-12 text-gray-400 text-sm">
               Aucune édition trouvée.{' '}
-              <button onClick={() => setShowNew(true)} className="text-[#003DA5] hover:underline">
+              <button onClick={() => setShowNew(true)} className="text-[var(--oif-blue)] hover:underline">
                 Créer la première édition →
               </button>
             </div>
@@ -243,16 +243,16 @@ export default function EditionsPage() {
               <div
                 key={ed.annee}
                 className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition ${
-                  ed.est_actif ? 'border-[#003DA5]/30 ring-1 ring-[#003DA5]/20' : 'border-gray-100'
+                  ed.est_actif ? 'border-[var(--oif-blue)]/30 ring-1 ring-[var(--oif-blue)]/20' : 'border-gray-100'
                 }`}
               >
                 <div className="px-6 py-5 flex items-center gap-6">
 
                   {/* Année + badge actif */}
                   <div className="flex-shrink-0 text-center w-16">
-                    <p className="text-3xl font-bold text-[#003DA5]">{ed.annee}</p>
+                    <p className="text-3xl font-bold text-[var(--oif-blue)]">{ed.annee}</p>
                     {ed.est_actif && (
-                      <span className="inline-block mt-1 text-[10px] font-semibold text-[#003DA5] bg-[#003DA5]/10 px-2 py-0.5 rounded-full uppercase tracking-wide">
+                      <span className="inline-block mt-1 text-[10px] font-semibold text-[var(--oif-blue)] bg-[var(--oif-blue)]/10 px-2 py-0.5 rounded-full uppercase tracking-wide">
                         Active
                       </span>
                     )}
@@ -289,7 +289,7 @@ export default function EditionsPage() {
                       value={ed.statut}
                       disabled={saving === ed.annee}
                       onChange={e => handleStatut(ed.annee, e.target.value)}
-                      className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-[#003DA5]/30 disabled:opacity-50"
+                      className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/30 disabled:opacity-50"
                     >
                       <option value="en_cours">En cours</option>
                       <option value="clos">Clôturé</option>
@@ -300,7 +300,7 @@ export default function EditionsPage() {
                       <button
                         onClick={() => handleActiver(ed.annee)}
                         disabled={saving === ed.annee}
-                        className="text-xs font-semibold text-[#003DA5] border border-[#003DA5]/30 px-3 py-1.5 rounded-lg hover:bg-[#003DA5]/5 transition disabled:opacity-50"
+                        className="text-xs font-semibold text-[var(--oif-blue)] border border-[var(--oif-blue)]/30 px-3 py-1.5 rounded-lg hover:bg-[var(--oif-blue)]/5 transition disabled:opacity-50"
                       >
                         {saving === ed.annee ? '⏳' : 'Activer'}
                       </button>
@@ -308,7 +308,7 @@ export default function EditionsPage() {
 
                     <Link
                       href={`/admin/projets?edition=${ed.annee}`}
-                      className="text-xs font-semibold text-white bg-[#003DA5] hover:bg-[#042C53] px-4 py-1.5 rounded-lg transition"
+                      className="text-xs font-semibold text-white bg-[var(--oif-blue)] hover:bg-[var(--oif-blue-dark)] px-4 py-1.5 rounded-lg transition"
                     >
                       Gérer les projets →
                     </Link>

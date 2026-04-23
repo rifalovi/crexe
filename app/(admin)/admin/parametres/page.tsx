@@ -142,7 +142,7 @@ export default function ParametresPage() {
           <button
             onClick={saveAll}
             disabled={saving === '__all__'}
-            className="flex items-center gap-2 bg-[#003DA5] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#042C53] transition disabled:opacity-50"
+            className="flex items-center gap-2 bg-[var(--oif-blue)] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[var(--oif-blue-dark)] transition disabled:opacity-50"
           >
             {saving === '__all__' ? '⏳ Enregistrement…' : `✓ Enregistrer tout (${nbModified})`}
           </button>
@@ -252,7 +252,7 @@ export default function ParametresPage() {
                                 className={`flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition ${
                                   isModified
                                     ? 'border-amber-300 bg-amber-50 focus:ring-amber-200'
-                                    : 'border-gray-200 focus:ring-[#003DA5]/20 focus:border-[#003DA5]'
+                                    : 'border-gray-200 focus:ring-[var(--oif-blue)]/20 focus:border-[var(--oif-blue)]'
                                 }`}
                               />
                             </div>
@@ -270,7 +270,7 @@ export default function ParametresPage() {
                               <button
                                 onClick={() => save(param.cle)}
                                 disabled={isSaving}
-                                className="text-xs font-semibold text-white bg-[#003DA5] hover:bg-[#042C53] px-3 py-1.5 rounded-lg transition disabled:opacity-50"
+                                className="text-xs font-semibold text-white bg-[var(--oif-blue)] hover:bg-[var(--oif-blue-dark)] px-3 py-1.5 rounded-lg transition disabled:opacity-50"
                               >
                                 {isSaving ? '⏳' : '✓ Sauver'}
                               </button>

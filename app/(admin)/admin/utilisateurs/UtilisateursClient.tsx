@@ -142,7 +142,7 @@ export default function UtilisateursClient({ utilisateurs: initial }: { utilisat
       {!showNew ? (
         <button
           onClick={() => setShowNew(true)}
-          className="flex items-center gap-2 bg-[#003DA5] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#042C53] transition"
+          className="flex items-center gap-2 bg-[var(--oif-blue)] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[var(--oif-blue-dark)] transition"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -150,7 +150,7 @@ export default function UtilisateursClient({ utilisateurs: initial }: { utilisat
           Créer un compte utilisateur
         </button>
       ) : (
-        <div className="bg-white rounded-2xl border border-[#003DA5]/20 p-6 shadow-sm">
+        <div className="bg-white rounded-2xl border border-[var(--oif-blue)]/20 p-6 shadow-sm">
           <h3 className="font-semibold text-gray-900 mb-4">Nouveau compte utilisateur</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
@@ -161,7 +161,7 @@ export default function UtilisateursClient({ utilisateurs: initial }: { utilisat
                 type="text" value={form.nom_complet}
                 onChange={e => setForm(f => ({ ...f, nom_complet: e.target.value }))}
                 placeholder="Prénom Nom"
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003DA5]/20"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/20"
               />
             </div>
             <div>
@@ -172,7 +172,7 @@ export default function UtilisateursClient({ utilisateurs: initial }: { utilisat
                 type="email" value={form.email}
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                 placeholder="prenom.nom@francophonie.org"
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003DA5]/20"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/20"
               />
             </div>
             <div>
@@ -180,7 +180,7 @@ export default function UtilisateursClient({ utilisateurs: initial }: { utilisat
               <select
                 value={form.role}
                 onChange={e => setForm(f => ({ ...f, role: e.target.value as typeof form.role }))}
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#003DA5]/20"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/20"
               >
                 <option value="lecteur">Lecteur — accès lecture seule</option>
                 <option value="editeur">Éditeur — peut modifier les projets</option>
@@ -195,7 +195,7 @@ export default function UtilisateursClient({ utilisateurs: initial }: { utilisat
                 <input
                   type="text" value={form.mot_de_passe}
                   onChange={e => setForm(f => ({ ...f, mot_de_passe: e.target.value }))}
-                  className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-[#003DA5]/20"
+                  className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/20"
                 />
                 <button onClick={copyMdp}
                   className={`px-3 py-2 text-xs rounded-lg border transition ${motDePasseCopied ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
@@ -211,7 +211,7 @@ export default function UtilisateursClient({ utilisateurs: initial }: { utilisat
           </div>
           <div className="flex gap-3">
             <button onClick={handleCreer} disabled={busy === 'create'}
-              className="bg-[#003DA5] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#042C53] transition disabled:opacity-50">
+              className="bg-[var(--oif-blue)] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[var(--oif-blue-dark)] transition disabled:opacity-50">
               {busy === 'create' ? '⏳ Création…' : '✓ Créer le compte'}
             </button>
             <button onClick={() => setShowNew(false)}
@@ -245,7 +245,7 @@ export default function UtilisateursClient({ utilisateurs: initial }: { utilisat
                   <div className="flex items-center gap-4">
                     {/* Avatar + info */}
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="w-9 h-9 rounded-full bg-[#003DA5]/10 flex items-center justify-center text-sm font-bold text-[#003DA5] flex-shrink-0">
+                      <div className="w-9 h-9 rounded-full bg-[var(--oif-blue)]/10 flex items-center justify-center text-sm font-bold text-[var(--oif-blue)] flex-shrink-0">
                         {(u.nom_complet ?? u.email).charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
@@ -283,7 +283,7 @@ export default function UtilisateursClient({ utilisateurs: initial }: { utilisat
                     <div className="w-32 flex items-center justify-end">
                       <button
                         onClick={() => { setResetId(isResetting ? null : u.id); setNewMdp(genererMotDePasse()) }}
-                        className="text-xs text-gray-400 hover:text-[#003DA5] transition px-2 py-1 rounded"
+                        className="text-xs text-gray-400 hover:text-[var(--oif-blue)] transition px-2 py-1 rounded"
                       >
                         ↺ MDP
                       </button>
@@ -297,10 +297,10 @@ export default function UtilisateursClient({ utilisateurs: initial }: { utilisat
                         type="text" value={newMdp}
                         onChange={e => setNewMdp(e.target.value)}
                         placeholder="Nouveau mot de passe"
-                        className="flex-1 px-3 py-1.5 text-xs font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#003DA5]/20"
+                        className="flex-1 px-3 py-1.5 text-xs font-mono border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--oif-blue)]/20"
                       />
                       <button onClick={() => handleReset(u.id)} disabled={busy === u.id + '_reset'}
-                        className="text-xs font-semibold text-white bg-[#003DA5] px-3 py-1.5 rounded-lg hover:bg-[#042C53] transition disabled:opacity-50">
+                        className="text-xs font-semibold text-white bg-[var(--oif-blue)] px-3 py-1.5 rounded-lg hover:bg-[var(--oif-blue-dark)] transition disabled:opacity-50">
                         {busy === u.id + '_reset' ? '⏳' : '✓ Appliquer'}
                       </button>
                       <button onClick={() => setResetId(null)} className="text-xs text-gray-400 hover:text-gray-600 px-2">✕</button>

@@ -166,7 +166,7 @@ export default function MonComptePage() {
       {/* ── Carte identité ───────────────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
         <div className="flex items-start gap-4 mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#003DA5]/10 flex items-center justify-center text-2xl font-bold text-[#003DA5] flex-shrink-0">
+          <div className="w-14 h-14 rounded-2xl bg-[var(--oif-blue)]/10 flex items-center justify-center text-2xl font-bold text-[var(--oif-blue)] flex-shrink-0">
             {(profil?.nom_complet ?? profil?.email ?? '?').charAt(0).toUpperCase()}
           </div>
           <div>
@@ -182,7 +182,7 @@ export default function MonComptePage() {
                 <span className="text-xs text-gray-400">○ Compte inactif</span>
               )}
               {profil?.compte_verifie_oif && (
-                <span className="text-xs text-[#003DA5] font-medium">✓ Vérifié OIF</span>
+                <span className="text-xs text-[var(--oif-blue)] font-medium">✓ Vérifié OIF</span>
               )}
             </div>
           </div>
@@ -213,7 +213,7 @@ export default function MonComptePage() {
             <input
               type="text" value={nomComplet} onChange={e => setNomComplet(e.target.value)}
               placeholder="Prénom Nom"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003DA5]/20"
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/20"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -222,7 +222,7 @@ export default function MonComptePage() {
               <input
                 type="text" value={organisation} onChange={e => setOrganisation(e.target.value)}
                 placeholder="OIF, UNESCO…"
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003DA5]/20"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/20"
               />
             </div>
             <div>
@@ -230,7 +230,7 @@ export default function MonComptePage() {
               <input
                 type="text" value={poste} onChange={e => setPoste(e.target.value)}
                 placeholder="Chef de projet, Analyste…"
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003DA5]/20"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/20"
               />
             </div>
           </div>
@@ -244,7 +244,7 @@ export default function MonComptePage() {
           </div>
           <button
             onClick={sauvegarderProfil} disabled={saving}
-            className="mt-2 px-5 py-2.5 text-sm font-semibold text-white bg-[#003DA5] hover:bg-[#042C53] rounded-xl transition disabled:opacity-50"
+            className="mt-2 px-5 py-2.5 text-sm font-semibold text-white bg-[var(--oif-blue)] hover:bg-[var(--oif-blue-dark)] rounded-xl transition disabled:opacity-50"
           >
             {saving ? '⏳ Enregistrement…' : '✓ Enregistrer les modifications'}
           </button>
@@ -257,7 +257,7 @@ export default function MonComptePage() {
           <h2 className="text-sm font-semibold text-gray-900">Mot de passe</h2>
           <button
             onClick={() => setShowMdp(!showMdp)}
-            className="text-xs text-[#003DA5] hover:underline font-medium"
+            className="text-xs text-[var(--oif-blue)] hover:underline font-medium"
           >
             {showMdp ? '▲ Fermer' : '▼ Modifier mon mot de passe'}
           </button>
@@ -272,7 +272,7 @@ export default function MonComptePage() {
               <input
                 type="password" value={mdpNouv} onChange={e => setMdpNouv(e.target.value)}
                 placeholder="Minimum 8 caractères"
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#003DA5]/20"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--oif-blue)]/20"
               />
             </div>
             <div>
@@ -281,7 +281,7 @@ export default function MonComptePage() {
                 type="password" value={mdpConf} onChange={e => setMdpConf(e.target.value)}
                 placeholder="Répétez le mot de passe"
                 className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 transition ${
-                  mdpConf && mdpNouv !== mdpConf ? 'border-red-300 focus:ring-red-200' : 'border-gray-200 focus:ring-[#003DA5]/20'
+                  mdpConf && mdpNouv !== mdpConf ? 'border-red-300 focus:ring-red-200' : 'border-gray-200 focus:ring-[var(--oif-blue)]/20'
                 }`}
               />
               {mdpConf && mdpNouv !== mdpConf && (
@@ -290,7 +290,7 @@ export default function MonComptePage() {
             </div>
             <button
               onClick={changerMotDePasse} disabled={saving || !mdpNouv || !mdpConf}
-              className="px-5 py-2.5 text-sm font-semibold text-white bg-[#003DA5] hover:bg-[#042C53] rounded-xl transition disabled:opacity-50"
+              className="px-5 py-2.5 text-sm font-semibold text-white bg-[var(--oif-blue)] hover:bg-[var(--oif-blue-dark)] rounded-xl transition disabled:opacity-50"
             >
               {saving ? '⏳ Modification…' : '✓ Changer le mot de passe'}
             </button>
