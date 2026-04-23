@@ -8,11 +8,10 @@
 // - Avantage SEO : Google indexe le contenu complet dès le premier rendu
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Concept ISR (Incremental Static Regeneration) :
-// La page est régénérée en arrière-plan toutes les 5 minutes.
-// Les visiteurs reçoivent une version mise en cache (ultra-rapide),
-// pendant que Next.js recharge les données en arrière-plan.
-export const revalidate = 300  // 5 minutes
+// IMPORTANT : pas de revalidate ici — cette page utilise cookies() pour détecter
+// l'édition active (CREXE 2024 vs 2025). ISR rendrait le cookie inopérant :
+// tous les visiteurs verraient la même édition en cache. La page doit rester DYNAMIC.
+export const dynamic = 'force-dynamic'
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'

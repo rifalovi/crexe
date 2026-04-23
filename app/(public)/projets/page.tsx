@@ -3,7 +3,9 @@
 // Server Component — lecture directe de Supabase via client SSR.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const revalidate = 300  // ISR 5 min — données projets stables
+// La page /projets filtre par PS via searchParams et liste les projets publiés.
+// Elle peut avoir du cache léger mais doit rester dynamic pour les searchParams.
+export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
 import type { Metadata } from 'next'
