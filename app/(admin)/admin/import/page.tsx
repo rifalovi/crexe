@@ -7,7 +7,7 @@
 // extraites à un projet existant ou de créer un nouveau projet.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import DocImporter, { ImportResult } from '@/components/admin/DocImporter'
@@ -34,7 +34,10 @@ export default function ImportPage() {
     setLoading(false)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  useState(() => { chargerProjets() })
+  // Concept : useEffect déclenche le chargement APRÈS le premier rendu
+  // useState(() => {...}) est incorrect ici — c'est une initializer function React,
+  // pas un hook de cycle de vie. useEffect est la bonne approche.
+  useEffect(() => { chargerProjets() }, [chargerProjets])
 
   const showFlash = (type: 'ok' | 'err', msg: string) => {
     setFlash({ type, msg })

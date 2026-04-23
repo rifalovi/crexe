@@ -11,12 +11,23 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import ChatWidget from '@/components/chat/ChatWidget'
 import EditionBanner, { type EditionInfo } from '@/components/shared/EditionBanner'
 import HeroCarousel from '@/components/shared/HeroCarousel'
 import EraHomepageBlock from '@/components/shared/EraHomepageBlock'
 import { COOKIE_EDITION } from '@/lib/edition-context'
 import { CREX_ANNEE } from '@/lib/constants'
+
+export const metadata: Metadata = {
+  title: `CREXE ${CREX_ANNEE} — Plateforme de valorisation des projets OIF`,
+  description: `Explorez les projets, indicateurs d'impact et résultats ERA de l'Organisation internationale de la Francophonie — Compte-Rendu d'Exécution ${CREX_ANNEE}.`,
+  openGraph: {
+    title: `CREXE ${CREX_ANNEE} — Projets OIF`,
+    description: `Données d'impact, résultats ERA et fiches projets de la Francophonie.`,
+    type: 'website',
+  },
+}
 
 // ─── Palette PS ───────────────────────────────────────────────────────────────
 const PS_PALETTE: Record<string, { bg: string; text: string; border: string; accent: string; icon: string }> = {

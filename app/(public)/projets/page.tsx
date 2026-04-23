@@ -4,7 +4,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
+
+export const metadata: Metadata = {
+  title: 'Projets OIF — Plateforme CREXE',
+  description: 'Explorez les projets de coopération francophone : impact, indicateurs, témoignages et résultats par programme stratégique.',
+  openGraph: {
+    title: 'Projets OIF — CREXE',
+    description: 'Fiches projets avec données d\'impact de la Francophonie.',
+    type: 'website',
+  },
+}
 
 interface Programme {
   id: string
