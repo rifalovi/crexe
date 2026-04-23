@@ -29,6 +29,7 @@ export async function NavOIF() {
               alt="Logo officiel de l'Organisation internationale de la Francophonie"
               width={110}
               height={52}
+              sizes="110px"
               className="opacity-95 group-hover:opacity-100 transition"
               style={{ minWidth: 96, height: 'auto' }}
               priority

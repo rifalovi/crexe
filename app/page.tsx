@@ -8,6 +8,12 @@
 // - Avantage SEO : Google indexe le contenu complet dès le premier rendu
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Concept ISR (Incremental Static Regeneration) :
+// La page est régénérée en arrière-plan toutes les 5 minutes.
+// Les visiteurs reçoivent une version mise en cache (ultra-rapide),
+// pendant que Next.js recharge les données en arrière-plan.
+export const revalidate = 300  // 5 minutes
+
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
@@ -86,7 +92,10 @@ async function getData(editionActive: number) {
     { cookies: { getAll: () => [], setAll: () => {} } }
   )
 
-  const [psRes, projetsRes, editionsRes] = await Promise.all([
+  // Concept performance : 4 requêtes en PARALLÈLE via Promise.all
+  // Aucune n'attend la fin d'une autre — temps total ≈ requête la plus lente (~150ms)
+  // Au lieu de 4 requêtes séquentielles (~600ms)
+  const [psRes, projetsRes, editionsRes, statsRes] = await Promise.all([
     // Programmes stratégiques
     supabase
       .from('programmes_strategiques')
@@ -101,28 +110,29 @@ async function getData(editionActive: number) {
       .eq('annee_exercice', editionActive)
       .order('code_officiel'),
 
-    // Toutes les éditions disponibles (pour la bannière) — ordre chronologique ASC
+    // Toutes les éditions disponibles (pour la bannière)
     supabase
       .from('crex_editions')
       .select('annee, libelle, statut')
       .order('annee', { ascending: true }),
+
+    // Stats toutes éditions (bannière) — fusionnée dans le Promise.all, plus de requête séquentielle
+    supabase
+      .from('projets')
+      .select('annee_exercice, budget_engage, taux_execution')
+      .eq('statut', 'publie'),
   ])
 
   const programmes: Programme[] = psRes.data ?? []
   const projetsPublies: Projet[] = projetsRes.data ?? []
   const editionsRows: EditionRow[] = editionsRes.data ?? []
+  const statsParEdition = statsRes.data ?? []
 
-  // Statistiques de l'édition active
+  // Statistiques de l'édition active (calculées à partir des données déjà chargées)
   const budgetTotal = projetsPublies.reduce((sum, p) => sum + (p.budget_engage ?? 0), 0)
   const tauxMoyen = projetsPublies.length > 0
     ? Math.round(projetsPublies.reduce((sum, p) => sum + (p.taux_execution ?? 0), 0) / projetsPublies.length)
     : null
-
-  // Statistiques par édition pour la bannière (projets publiés par année)
-  const { data: statsParEdition } = await supabase
-    .from('projets')
-    .select('annee_exercice, budget_engage, taux_execution')
-    .eq('statut', 'publie')
 
   const editionStats = editionsRows.map((ed): EditionInfo => {
     const projetsEd = (statsParEdition ?? []).filter(p => p.annee_exercice === ed.annee)

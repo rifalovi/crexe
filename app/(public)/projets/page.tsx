@@ -3,6 +3,8 @@
 // Server Component — lecture directe de Supabase via client SSR.
 // ─────────────────────────────────────────────────────────────────────────────
 
+export const revalidate = 300  // ISR 5 min — données projets stables
+
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { createClient } from '@/lib/supabase/server'
