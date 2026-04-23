@@ -227,7 +227,7 @@ export default function ImportPage() {
             )}
           </div>
 
-          {imported?.projet?.nom && (
+          {!!(imported?.projet?.nom) && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5">
               <p className="text-sm font-semibold text-gray-900 mb-3">Créer un nouveau projet</p>
               <p className="text-xs text-gray-500 mb-3">
