@@ -19,7 +19,7 @@
 //   6. Événements  — timeline d'événements marquants
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, use } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 
@@ -299,9 +299,13 @@ function StatutBadge({ statut }: { statut: string }) {
 
 // ─── Composant principal ──────────────────────────────────────────────────────
 
-export default function EditProjetPage({ params }: { params: { id: string } }) {
+// ─── Concept Next.js 16 — params asynchrones ─────────────────────────────────
+// En Next.js 15+, params est une Promise. Les Client Components doivent utiliser
+// React.use() pour "dérouler" la promesse de façon synchrone. Cela remplace
+// l'ancien accès direct `params.id` qui retournait undefined en Next.js 16.
+export default function EditProjetPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: projetId } = use(params)
   const router = useRouter()
-  const projetId = params.id
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

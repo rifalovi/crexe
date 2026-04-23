@@ -30,14 +30,21 @@ function formatBudget(montant: number): string {
 export default function EditionBanner({ editions, editionActive }: EditionBannerProps) {
   const router = useRouter()
 
-  async function handleSelect(annee: number) {
+  // Sélectionner une édition : met à jour le cookie + navigue vers /projets
+  async function handleSelect(annee: number, alreadyActive: boolean) {
     setEditionActiveCookie(annee)
     await fetch('/api/edition', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ annee }),
     })
-    router.refresh()
+    // Si déjà actif → naviguer directement vers les projets
+    // Sinon → d'abord activer l'édition puis naviguer
+    if (alreadyActive) {
+      router.push('/projets')
+    } else {
+      router.push('/projets')
+    }
   }
 
   // N'afficher que les éditions avec des projets, + la première sans projets s'il y en a une
@@ -69,7 +76,7 @@ export default function EditionBanner({ editions, editionActive }: EditionBanner
             return (
               <button
                 key={ed.annee}
-                onClick={() => handleSelect(ed.annee)}
+                onClick={() => handleSelect(ed.annee, isActive)}
                 className={`
                   relative text-left rounded-2xl border-2 p-6 transition-all duration-200 group
                   ${isActive

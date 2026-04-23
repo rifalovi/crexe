@@ -6,12 +6,16 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { CREX_ANNEE } from '@/lib/constants'
+import { getEditionActive } from '@/lib/edition-context'
 import EditionSwitcher from '@/components/shared/EditionSwitcher'
 
 // ─── Re-export pour la rétrocompatibilité des imports existants ───────────────
 export { CREX_ANNEE }
 
-export function NavOIF() {
+// Concept : NavOIF est un Server Component async — il lit le cookie d'édition
+// côté serveur et affiche l'année correcte dès le premier rendu (SSR).
+export async function NavOIF() {
+  const anneeActive = await getEditionActive()
   return (
     <nav className="bg-[var(--oif-blue-dark)] border-b border-white/10">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -23,15 +27,16 @@ export function NavOIF() {
             <Image
               src="/images/logo-oif.svg"
               alt="Organisation internationale de la Francophonie"
-              width={80}
-              height={42}
-              className="brightness-0 invert opacity-90 group-hover:opacity-100 transition"
+              width={96}
+              height={50}
+              className="brightness-0 invert opacity-95 group-hover:opacity-100 transition"
+              style={{ minWidth: 96 }}
               priority
             />
           </div>
           <div className="flex flex-col leading-tight">
             <span className="text-white font-semibold text-sm tracking-wide">
-              CREXE <span className="text-[var(--oif-gold)] font-bold">{CREX_ANNEE}</span>
+              CREXE <span className="text-[var(--oif-gold)] font-bold">{anneeActive}</span>
             </span>
             <span className="text-white/40 text-[9px] font-normal tracking-wide hidden md:block">
               Service de Conception et Suivi des projets (SCS)
