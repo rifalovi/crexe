@@ -152,6 +152,78 @@ export async function supprimerResultatEra(id: string) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// UTILISATEURS — Création et gestion via Supabase Auth Admin
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Concept : supabase.auth.admin.createUser() permet de créer un compte auth
+// sans envoyer d'email de confirmation. On définit un mot de passe provisoire
+// que l'admin communique à l'utilisateur. À la première connexion, l'utilisateur
+// devra changer son mot de passe depuis "Mon compte".
+
+export async function creerUtilisateur(payload: {
+  email:       string
+  mot_de_passe: string
+  nom_complet: string
+  role:        'admin' | 'editeur' | 'lecteur'
+}) {
+  await verifierAdmin()
+  const admin = createAdminClient()
+
+  // 1. Créer le compte auth (sans confirmation email — l'admin gère l'accès)
+  const { data: authData, error: authErr } = await admin.auth.admin.createUser({
+    email:          payload.email,
+    password:       payload.mot_de_passe,
+    email_confirm:  true,   // marquer l'email comme vérifié directement
+    user_metadata:  { nom_complet: payload.nom_complet },
+  })
+
+  if (authErr) throw new Error(`Création compte impossible : ${authErr.message}`)
+
+  const userId = authData.user.id
+
+  // 2. Créer / mettre à jour le profil avec le rôle choisi
+  const { error: profErr } = await admin.from('profils').upsert({
+    id:                  userId,
+    email:               payload.email,
+    nom_complet:         payload.nom_complet,
+    role:                payload.role,
+    actif:               true,
+    compte_verifie_oif:  false,
+  }, { onConflict: 'id' })
+
+  if (profErr) throw new Error(`Profil impossible : ${profErr.message}`)
+
+  revalidatePath('/admin/utilisateurs')
+  return { ok: true, userId }
+}
+
+export async function modifierRoleUtilisateur(userId: string, role: 'admin' | 'editeur' | 'lecteur') {
+  await verifierAdmin()
+  const admin = createAdminClient()
+  const { error } = await admin.from('profils').update({ role }).eq('id', userId)
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/utilisateurs')
+  return { ok: true }
+}
+
+export async function toggleActiverUtilisateur(userId: string, actif: boolean) {
+  await verifierAdmin()
+  const admin = createAdminClient()
+  const { error } = await admin.from('profils').update({ actif }).eq('id', userId)
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/utilisateurs')
+  return { ok: true }
+}
+
+export async function reinitialiserMotDePasse(userId: string, nouveauMdp: string) {
+  await verifierAdmin()
+  const admin = createAdminClient()
+  const { error } = await admin.auth.admin.updateUserById(userId, { password: nouveauMdp })
+  if (error) throw new Error(error.message)
+  return { ok: true }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // PROJETS
 // ═══════════════════════════════════════════════════════════════════════════════
 

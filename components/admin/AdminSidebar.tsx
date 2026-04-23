@@ -98,17 +98,28 @@ export default function AdminSidebar({ userEmail, userRole }: Props) {
         })}
       </nav>
 
-      {/* Profil utilisateur + déconnexion */}
+      {/* Profil utilisateur → Mon compte */}
       <div className="px-3 py-4 border-t border-white/10">
-        <div className="px-3 py-2 mb-2">
-          <p className="text-white/80 text-xs font-medium truncate">{userEmail}</p>
-          <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-xs bg-white/10 text-white/60 capitalize">
-            {userRole}
-          </span>
-        </div>
+        <Link
+          href="/admin/mon-compte"
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition mb-1 text-left ${
+            pathname === '/admin/mon-compte'
+              ? 'bg-white/15 text-white'
+              : 'hover:bg-white/10 group'
+          }`}
+        >
+          <div className="w-7 h-7 rounded-full bg-[var(--oif-gold)] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+            {userEmail.charAt(0).toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-white/90 text-xs font-medium truncate group-hover:text-white transition">{userEmail}</p>
+            <span className="text-white/40 text-[10px] capitalize group-hover:text-white/60 transition">{userRole} · Mon compte</span>
+          </div>
+          <span className="text-white/30 text-xs group-hover:text-white/60 transition">→</span>
+        </Link>
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/60 hover:bg-white/10 hover:text-white transition"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-white/40 hover:bg-white/10 hover:text-white/70 transition"
         >
           <span>⎋</span>
           Se déconnecter
