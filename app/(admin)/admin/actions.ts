@@ -25,13 +25,14 @@ async function verifierAdmin() {
     throw new Error('Non authentifié')
   }
 
-  // On utilise le client admin pour lire le profil (évite les contraintes de type)
+  // Client admin pour lire le profil sans contrainte RLS (fiable en production)
+  // .maybeSingle() au lieu de .single() — évite l'exception si la ligne n'existe pas
   const adminClient = createAdminClient()
   const { data: profil } = await adminClient
     .from('profils')
     .select('role')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (!profil || (profil as any).role !== 'admin') {

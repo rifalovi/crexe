@@ -5,6 +5,8 @@
 
 // Concept : on utilise le client ADMIN (service_role) pour bypasser le RLS
 // et lire le profil de manière fiable, même en production Netlify.
+
+export const dynamic = 'force-dynamic'  // pas de cache — données admin en temps réel
 // Le client SSR (anon key) peut échouer si les cookies ne sont pas correctement
 // transmis dans certains contextes de déploiement.
 
