@@ -3,7 +3,13 @@
 // et permet de modifier leur rôle.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Concept : on utilise le client ADMIN (service_role) pour bypasser le RLS
+// et lire le profil de manière fiable, même en production Netlify.
+// Le client SSR (anon key) peut échouer si les cookies ne sont pas correctement
+// transmis dans certains contextes de déploiement.
+
 import { createServerClient } from '@supabase/ssr'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import UtilisateursClient from './UtilisateursClient'
@@ -11,30 +17,28 @@ import UtilisateursClient from './UtilisateursClient'
 async function getUtilisateurs() {
   const cookieStore = await cookies()
 
+  // Client SSR pour vérifier la session (auth uniquement)
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: () => {},
-      },
-    }
+    { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
   )
 
-  // Vérification que l'utilisateur est admin
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  // Client admin pour lire le profil sans contrainte RLS
+  const admin = createAdminClient()
+  const { data: profile } = await admin
     .from('profils')
     .select('role')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
-  if (profile?.role !== 'admin') redirect('/admin')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if (!profile || (profile as any).role !== 'admin') redirect('/admin')
 
-  const { data: utilisateurs } = await supabase
+  const { data: utilisateurs } = await admin
     .from('profils')
     .select('id, email, nom_complet, role, actif, created_at')
     .order('created_at', { ascending: false })
