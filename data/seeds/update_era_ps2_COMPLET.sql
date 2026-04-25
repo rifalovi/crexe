@@ -1,0 +1,4 @@
+-- ⚠️ NE PAS UTILISER — FICHIER ANNULÉ
+-- Ce fichier mélange ERA 2024 (base) avec des sources CREXE 2025.
+-- Il a été créé par erreur et doit être ignoré.
+-- Supprimer ce fichier manuellement si possible.

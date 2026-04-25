@@ -1,6 +1,6 @@
-// ─── Layout de l'espace admin — blindé contre tout crash ─────────────────────
-// TOUTES les opérations asynchrones sont enveloppées dans try-catch.
-// Aucune exception ne peut crasher le layout en production.
+// ─── Layout admin — anti-crash maximum ───────────────────────────────────────
+// Aucun redirect() à l'intérieur d'un try-catch (conflit NEXT_REDIRECT).
+// On utilise un flag booléen pour décider de rediriger APRÈS le bloc try.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { redirect } from 'next/navigation'
@@ -13,8 +13,9 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  let userEmail = ''
-  let userRole  = 'lecteur'
+  let userEmail    = ''
+  let userRole     = 'lecteur'
+  let needsRedirect = false
 
   try {
     const cookieStore = await cookies()
@@ -24,49 +25,42 @@ export default async function AdminLayout({
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          getAll() { return cookieStore.getAll() },
-          setAll(cookiesToSet) {
-            try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              )
-            } catch { /* Server Component lecture seule */ }
+          getAll()  { return cookieStore.getAll() },
+          setAll(cs) {
+            try { cs.forEach(({ name, value, options }) => cookieStore.set(name, value, options)) }
+            catch { /* Server Component lecture seule */ }
           },
         },
       }
     )
 
-    // Auth — si ça échoue, on redirige vers /login
-    const authRes = await supabase.auth.getUser()
-    const user    = authRes.data?.user
+    const { data: authData } = await supabase.auth.getUser()
+    const user = authData?.user
 
-    if (!user) redirect('/login')
+    if (!user) {
+      needsRedirect = true
+    } else {
+      userEmail = user.email ?? ''
 
-    userEmail = user.email ?? ''
-
-    // Profil — protégé : si ça échoue, on garde les valeurs par défaut
-    try {
+      // Lecture du profil — toujours maybeSingle(), jamais single()
       const { data: profile } = await supabase
         .from('profils')
-        .select('role, nom_complet, email')
+        .select('role, email')
         .eq('id', user.id)
         .maybeSingle()
 
       if (profile) {
-        userRole  = profile.role  ?? 'lecteur'
-        userEmail = profile.email ?? userEmail
+        userRole  = (profile as { role?: string }).role  ?? 'lecteur'
+        userEmail = (profile as { email?: string }).email ?? userEmail
       }
-    } catch {
-      // Profil illisible → on continue avec rôle par défaut (jamais de crash)
     }
-
-  } catch (err) {
-    // next/navigation redirect() lance une exception spéciale — on la laisse passer
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((err as any)?.digest?.startsWith('NEXT_REDIRECT')) throw err
-    // Toute autre exception → redirection sécurisée
-    redirect('/login')
+  } catch {
+    // Toute exception (réseau, cookie, Supabase down) → redirection sécurisée
+    needsRedirect = true
   }
+
+  // Redirect APRÈS le try-catch — évite le conflit avec NEXT_REDIRECT
+  if (needsRedirect) redirect('/login')
 
   return (
     <div className="flex min-h-screen bg-gray-50">

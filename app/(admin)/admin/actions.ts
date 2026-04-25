@@ -242,7 +242,7 @@ export async function approuverDemande(demandeId: string) {
     .select('email, nom_complet, poste')
     .eq('id', demandeId)
     .eq('statut', 'en_attente')
-    .single()
+    .maybeSingle()
 
   if (fetchErr || !demande) throw new Error('Demande introuvable ou déjà traitée')
 
