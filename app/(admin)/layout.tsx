@@ -56,11 +56,14 @@ export default async function AdminLayout({
 
   // Récupération du rôle depuis profils (table v3)
   // Note : user_profiles est l'ancienne table (v1), profils est la nouvelle (v3)
+  // .maybeSingle() au lieu de .single() — évite l'exception si la ligne n'existe pas
+  // (reproductible en production Netlify quand les cookies SSR ne transmettent pas
+  //  correctement le token, causant 0 lignes retournées au lieu de 1)
   const { data: profile } = await supabase
     .from('profils')
     .select('role, nom_complet')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   const userRole = profile?.role ?? 'lecteur'
 
