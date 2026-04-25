@@ -9,25 +9,32 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 
 async function getLecteur() {
-  const cookieStore = await cookies()
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { cookies: { getAll: () => cookieStore.getAll() } }
-  )
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login?redirect=/lecteur')
+  try {
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      { cookies: { getAll: () => cookieStore.getAll(), setAll: () => {} } }
+    )
+    const authRes = await supabase.auth.getUser()
+    const user = authRes.data?.user
+    if (!user) redirect('/login?redirect=/lecteur')
 
-  const { data: profil } = await supabase
-    .from('profils')
-    .select('role, nom_complet, email')
-    .eq('id', user.id)
-    .maybeSingle()
+    const { data: profil } = await supabase
+      .from('profils')
+      .select('role, nom_complet, email')
+      .eq('id', user.id)
+      .maybeSingle()
 
-  if (!profil || !['lecteur', 'editeur', 'admin'].includes(profil.role)) {
-    redirect('/login?redirect=/lecteur')
+    if (!profil || !['lecteur', 'editeur', 'admin'].includes(profil.role ?? '')) {
+      redirect('/login?redirect=/lecteur')
+    }
+    return { user, profil }
+  } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((err as any)?.digest?.startsWith('NEXT_REDIRECT')) throw err
+    redirect('/login')
   }
-  return { user, profil }
 }
 
 export default async function LecteurLayout({ children }: { children: React.ReactNode }) {
