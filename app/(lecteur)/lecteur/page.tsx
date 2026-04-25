@@ -21,7 +21,7 @@ async function getMesProjets() {
     .from('profils')
     .select('role, nom_complet, email')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   // Admin et éditeurs voient tous les projets ; lecteurs voient leurs projets assignés
   let projets: { id: string; nom: string; code_officiel: string; statut: string; programme?: string; couleur?: string }[] = []

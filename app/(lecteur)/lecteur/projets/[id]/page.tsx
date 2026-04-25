@@ -25,7 +25,7 @@ export default async function LecteurProjetPage({ params }: { params: Promise<{ 
       pays_couverture(pays(nom, code_iso2))
     `)
     .eq('id', id)
-    .single()
+    .maybeSingle()
 
   if (!projet) notFound()
 

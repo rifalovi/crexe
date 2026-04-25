@@ -77,7 +77,7 @@ async function verifierAdmin(): Promise<boolean> {
     )
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return false
-    const { data } = await supabase.from('profils').select('role').eq('id', user.id).single()
+    const { data } = await supabase.from('profils').select('role').eq('id', user.id).maybeSingle()
     return data?.role === 'admin'
   } catch {
     return false

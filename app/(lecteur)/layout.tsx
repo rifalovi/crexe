@@ -22,7 +22,7 @@ async function getLecteur() {
     .from('profils')
     .select('role, nom_complet, email')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   if (!profil || !['lecteur', 'editeur', 'admin'].includes(profil.role)) {
     redirect('/login?redirect=/lecteur')

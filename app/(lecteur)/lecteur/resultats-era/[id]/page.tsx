@@ -19,7 +19,7 @@ export default async function LecteurResultatsEraPage({ params }: { params: Prom
     .from('projets')
     .select('id, nom, code_officiel, programmes_strategiques(couleur_theme)')
     .eq('id', id)
-    .single()
+    .maybeSingle()
 
   const { data: era } = await supabase
     .from('era_resultats')

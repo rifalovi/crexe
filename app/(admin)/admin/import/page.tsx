@@ -154,7 +154,7 @@ export default function ImportPage() {
       mots_cles:      p.mots_cles,
       statut:         'brouillon',
       annee_exercice: 2025,
-    }).select().single()
+    }).select().maybeSingle()
     if (error) { showFlash('err', `Erreur : ${error.message}`); return }
     if (data) router.push(`/admin/projets/${data.id}/edit`)
   }
