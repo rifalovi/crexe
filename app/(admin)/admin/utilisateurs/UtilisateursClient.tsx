@@ -8,7 +8,8 @@
 // qui utilisent le client admin (service_role) — jamais de clé exposée ici.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
 import {
   creerUtilisateur,
   modifierRoleUtilisateur,
@@ -36,8 +37,10 @@ function genererMotDePasse(): string {
   return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('')
 }
 
-export default function UtilisateursClient({ utilisateurs: initial }: { utilisateurs: Utilisateur[] }) {
-  const [utilisateurs, setUtilisateurs] = useState(initial)
+// Plus de prop — le composant charge ses propres données côté navigateur
+export default function UtilisateursClient() {
+  const [utilisateurs, setUtilisateurs] = useState<Utilisateur[]>([])
+  const [loadingUsers, setLoadingUsers] = useState(true)
   const [showNew, setShowNew]   = useState(false)
   const [busy, setBusy]         = useState<string | null>(null)
   const [flash, setFlash]       = useState<{ type: 'ok' | 'err'; msg: string } | null>(null)
@@ -50,6 +53,22 @@ export default function UtilisateursClient({ utilisateurs: initial }: { utilisat
     mot_de_passe: genererMotDePasse(),
   })
   const [motDePasseCopied, setMotDePasseCopied] = useState(false)
+
+  // Chargement des utilisateurs côté client (navigateur) — contourne le bug SSR Netlify
+  useEffect(() => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    supabase
+      .from('profils')
+      .select('id, email, nom_complet, role, actif, created_at')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        setUtilisateurs(data ?? [])
+        setLoadingUsers(false)
+      })
+  }, [])
 
   const showFlash = (type: 'ok' | 'err', msg: string) => {
     setFlash({ type, msg })
@@ -123,6 +142,18 @@ export default function UtilisateursClient({ utilisateurs: initial }: { utilisat
     await navigator.clipboard.writeText(form.mot_de_passe)
     setMotDePasseCopied(true)
     setTimeout(() => setMotDePasseCopied(false), 2000)
+  }
+
+  if (loadingUsers) {
+    return (
+      <div className="flex items-center justify-center py-12 text-gray-400 gap-2">
+        <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+        </svg>
+        Chargement des utilisateurs…
+      </div>
+    )
   }
 
   return (
