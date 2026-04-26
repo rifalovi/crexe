@@ -161,67 +161,124 @@ export async function supprimerResultatEra(id: string) {
 // que l'admin communique à l'utilisateur. À la première connexion, l'utilisateur
 // devra changer son mot de passe depuis "Mon compte".
 
+// Pattern : retourner { ok, error } au lieu de throw — en production Next.js
+// masque les messages d'erreur des Server Actions, ce pattern les préserve.
+
 export async function creerUtilisateur(payload: {
   email:       string
   mot_de_passe: string
   nom_complet: string
   role:        'admin' | 'editeur' | 'lecteur'
-}) {
-  await verifierAdmin()
+}): Promise<{ ok: true; userId: string } | { ok: false; error: string }> {
+  // ── Étape 1 : vérification admin ──────────────────────────────────────────
+  try {
+    await verifierAdmin()
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Erreur auth'
+    console.error('[creerUtilisateur] verifierAdmin échoué :', msg)
+    return { ok: false, error: msg }
+  }
+
   const admin = createAdminClient()
 
-  // 1. Créer le compte auth (sans confirmation email — l'admin gère l'accès)
-  const { data: authData, error: authErr } = await admin.auth.admin.createUser({
-    email:          payload.email,
-    password:       payload.mot_de_passe,
-    email_confirm:  true,   // marquer l'email comme vérifié directement
-    user_metadata:  { nom_complet: payload.nom_complet },
-  })
+  // ── Étape 2 : création du compte Supabase Auth ────────────────────────────
+  // Concept : auth.admin.createUser() crée un compte sans envoyer d'email de
+  // confirmation (email_confirm: true = marque le compte comme déjà confirmé).
+  // Nécessite la SUPABASE_SERVICE_ROLE_KEY (jamais exposée côté client).
+  let userId: string
+  try {
+    const { data: authData, error: authErr } = await admin.auth.admin.createUser({
+      email:         payload.email,
+      password:      payload.mot_de_passe,
+      email_confirm: true,
+      user_metadata: { nom_complet: payload.nom_complet },
+    })
+    if (authErr) {
+      console.error('[creerUtilisateur] auth.admin.createUser :', authErr.message)
+      return { ok: false, error: `Création impossible : ${authErr.message}` }
+    }
+    userId = authData.user.id
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Erreur inconnue (auth)'
+    console.error('[creerUtilisateur] exception createUser :', msg)
+    return { ok: false, error: msg }
+  }
 
-  if (authErr) throw new Error(`Création compte impossible : ${authErr.message}`)
+  // ── Étape 3 : création du profil en base ─────────────────────────────────
+  try {
+    const { error: profErr } = await admin.from('profils').upsert({
+      id:          userId,
+      email:       payload.email,
+      nom_complet: payload.nom_complet,
+      role:        payload.role,
+      actif:       true,
+    }, { onConflict: 'id' })
 
-  const userId = authData.user.id
+    if (profErr) {
+      console.error('[creerUtilisateur] upsert profil :', profErr.message)
+      return { ok: false, error: `Profil impossible : ${profErr.message}` }
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Erreur inconnue (profil)'
+    console.error('[creerUtilisateur] exception upsert :', msg)
+    return { ok: false, error: msg }
+  }
 
-  // 2. Créer / mettre à jour le profil avec le rôle choisi
-  const { error: profErr } = await admin.from('profils').upsert({
-    id:                  userId,
-    email:               payload.email,
-    nom_complet:         payload.nom_complet,
-    role:                payload.role,
-    actif:               true,
-    compte_verifie_oif:  false,
-  }, { onConflict: 'id' })
+  // ── Étape 4 : invalidation du cache — isolée pour ne pas masquer les erreurs
+  try {
+    revalidatePath('/admin/utilisateurs')
+  } catch {
+    // revalidatePath peut échouer en dehors d'un contexte de rendu — non bloquant
+  }
 
-  if (profErr) throw new Error(`Profil impossible : ${profErr.message}`)
-
-  revalidatePath('/admin/utilisateurs')
   return { ok: true, userId }
 }
 
-export async function modifierRoleUtilisateur(userId: string, role: 'admin' | 'editeur' | 'lecteur') {
-  await verifierAdmin()
-  const admin = createAdminClient()
-  const { error } = await admin.from('profils').update({ role }).eq('id', userId)
-  if (error) throw new Error(error.message)
-  revalidatePath('/admin/utilisateurs')
-  return { ok: true }
+export async function modifierRoleUtilisateur(
+  userId: string,
+  role: 'admin' | 'editeur' | 'lecteur'
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await verifierAdmin()
+    const admin = createAdminClient()
+    const { error } = await admin.from('profils').update({ role }).eq('id', userId)
+    if (error) return { ok: false, error: error.message }
+    revalidatePath('/admin/utilisateurs')
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Erreur inconnue' }
+  }
 }
 
-export async function toggleActiverUtilisateur(userId: string, actif: boolean) {
-  await verifierAdmin()
-  const admin = createAdminClient()
-  const { error } = await admin.from('profils').update({ actif }).eq('id', userId)
-  if (error) throw new Error(error.message)
-  revalidatePath('/admin/utilisateurs')
-  return { ok: true }
+export async function toggleActiverUtilisateur(
+  userId: string,
+  actif: boolean
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await verifierAdmin()
+    const admin = createAdminClient()
+    const { error } = await admin.from('profils').update({ actif }).eq('id', userId)
+    if (error) return { ok: false, error: error.message }
+    revalidatePath('/admin/utilisateurs')
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Erreur inconnue' }
+  }
 }
 
-export async function reinitialiserMotDePasse(userId: string, nouveauMdp: string) {
-  await verifierAdmin()
-  const admin = createAdminClient()
-  const { error } = await admin.auth.admin.updateUserById(userId, { password: nouveauMdp })
-  if (error) throw new Error(error.message)
-  return { ok: true }
+export async function reinitialiserMotDePasse(
+  userId: string,
+  nouveauMdp: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  try {
+    await verifierAdmin()
+    const admin = createAdminClient()
+    const { error } = await admin.auth.admin.updateUserById(userId, { password: nouveauMdp })
+    if (error) return { ok: false, error: error.message }
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : 'Erreur inconnue' }
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

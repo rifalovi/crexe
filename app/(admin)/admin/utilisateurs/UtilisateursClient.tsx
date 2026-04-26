@@ -82,43 +82,48 @@ export default function UtilisateursClient() {
       return
     }
     setBusy('create')
+    let result: Awaited<ReturnType<typeof creerUtilisateur>>
     try {
-      await creerUtilisateur(form)
-      showFlash('ok', `Compte créé pour ${form.email}. Mot de passe provisoire : ${form.mot_de_passe}`)
-      setUtilisateurs(prev => [{
-        id: Date.now().toString(), email: form.email,
-        nom_complet: form.nom_complet, role: form.role, actif: true,
-        created_at: new Date().toISOString(),
-      }, ...prev])
-      setForm({ email: '', nom_complet: '', role: 'editeur', mot_de_passe: genererMotDePasse() })
-      setShowNew(false)
+      result = await creerUtilisateur(form)
     } catch (e) {
-      showFlash('err', e instanceof Error ? e.message : 'Erreur inconnue')
-    } finally {
+      // Filet de sécurité : Next.js peut rejeter la promesse au niveau framework
+      // (ex. erreur réseau, session expirée). On affiche un message clair.
       setBusy(null)
+      const msg = e instanceof Error ? e.message : 'Erreur réseau ou session expirée'
+      showFlash('err', `Erreur inattendue : ${msg}`)
+      return
     }
+    setBusy(null)
+    if (!result.ok) {
+      showFlash('err', result.error)
+      return
+    }
+    showFlash('ok', `Compte créé pour ${form.email}. Mot de passe provisoire : ${form.mot_de_passe}`)
+    setUtilisateurs(prev => [{
+      id: Date.now().toString(), email: form.email,
+      nom_complet: form.nom_complet, role: form.role, actif: true,
+      created_at: new Date().toISOString(),
+    }, ...prev])
+    setForm({ email: '', nom_complet: '', role: 'editeur', mot_de_passe: genererMotDePasse() })
+    setShowNew(false)
   }
 
   // ── Changer le rôle ──────────────────────────────────────────────────────
   async function handleRole(userId: string, role: string) {
     setBusy(userId + '_role')
-    try {
-      await modifierRoleUtilisateur(userId, role as 'admin' | 'editeur' | 'lecteur')
-      setUtilisateurs(prev => prev.map(u => u.id === userId ? { ...u, role } : u))
-    } catch (e) {
-      showFlash('err', e instanceof Error ? e.message : 'Erreur')
-    } finally { setBusy(null) }
+    const result = await modifierRoleUtilisateur(userId, role as 'admin' | 'editeur' | 'lecteur')
+    setBusy(null)
+    if (!result.ok) { showFlash('err', result.error); return }
+    setUtilisateurs(prev => prev.map(u => u.id === userId ? { ...u, role } : u))
   }
 
   // ── Activer / désactiver ─────────────────────────────────────────────────
   async function handleToggle(userId: string, actif: boolean) {
     setBusy(userId + '_actif')
-    try {
-      await toggleActiverUtilisateur(userId, actif)
-      setUtilisateurs(prev => prev.map(u => u.id === userId ? { ...u, actif } : u))
-    } catch (e) {
-      showFlash('err', e instanceof Error ? e.message : 'Erreur')
-    } finally { setBusy(null) }
+    const result = await toggleActiverUtilisateur(userId, actif)
+    setBusy(null)
+    if (!result.ok) { showFlash('err', result.error); return }
+    setUtilisateurs(prev => prev.map(u => u.id === userId ? { ...u, actif } : u))
   }
 
   // ── Réinitialiser mot de passe ───────────────────────────────────────────
@@ -128,14 +133,12 @@ export default function UtilisateursClient() {
       return
     }
     setBusy(userId + '_reset')
-    try {
-      await reinitialiserMotDePasse(userId, newMdp)
-      showFlash('ok', `Mot de passe réinitialisé. Communiquez le nouveau mot de passe à l'utilisateur.`)
-      setResetId(null)
-      setNewMdp('')
-    } catch (e) {
-      showFlash('err', e instanceof Error ? e.message : 'Erreur')
-    } finally { setBusy(null) }
+    const result = await reinitialiserMotDePasse(userId, newMdp)
+    setBusy(null)
+    if (!result.ok) { showFlash('err', result.error); return }
+    showFlash('ok', `Mot de passe réinitialisé. Communiquez le nouveau mot de passe à l'utilisateur.`)
+    setResetId(null)
+    setNewMdp('')
   }
 
   const copyMdp = async () => {
