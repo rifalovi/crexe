@@ -238,11 +238,34 @@ export async function modifierRoleUtilisateur(
   userId: string,
   role: 'admin' | 'editeur' | 'lecteur'
 ): Promise<{ ok: true } | { ok: false; error: string }> {
+  // Concept : le rôle est stocké à DEUX endroits :
+  //  1. table `profils` — utilisée par les RLS et le code applicatif
+  //  2. auth.users.user_metadata — visible dans le dashboard Supabase,
+  //     accessible côté client via supabase.auth.getUser().user_metadata
+  // On met à jour les deux pour garder la cohérence.
   try {
     await verifierAdmin()
     const admin = createAdminClient()
-    const { error } = await admin.from('profils').update({ role }).eq('id', userId)
-    if (error) return { ok: false, error: error.message }
+
+    // ── Étape 1 : mise à jour dans la table profils ───────────────────────
+    const { error: profilErr } = await admin
+      .from('profils')
+      .update({ role })
+      .eq('id', userId)
+    if (profilErr) return { ok: false, error: profilErr.message }
+
+    // ── Étape 2 : synchronisation dans auth.users.user_metadata ──────────
+    // Nécessite la service_role_key (admin client uniquement).
+    // updateUserById() met à jour user_metadata sans écraser les autres champs.
+    const { error: authErr } = await admin.auth.admin.updateUserById(userId, {
+      user_metadata: { role },
+    })
+    if (authErr) {
+      // Non bloquant : le rôle applicatif est déjà mis à jour dans profils.
+      // On log l'erreur mais on ne fait pas échouer l'action.
+      console.warn('[modifierRoleUtilisateur] sync auth.users échoué :', authErr.message)
+    }
+
     revalidatePath('/admin/utilisateurs')
     return { ok: true }
   } catch (e) {
